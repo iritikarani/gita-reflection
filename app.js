@@ -64,47 +64,47 @@ const guidance = {
   effort: {
     hindi: "अपने कर्म पर ध्यान देना और उसके परिणाम की चिंता में स्वयं को खो न देना इस शिक्षा का एक मुख्य संदेश है।",
     english: "The teaching emphasizes sincere action without allowing attachment to the result to disturb your inner balance.",
-    why: "If you feel tired, this can be a gentle reminder to focus on the step that is in front of you rather than carrying the weight of every future result at once."
+    whyEn: "If you feel tired, this can be a gentle reminder to focus on the step that is in front of you rather than carrying the weight of every future result at once.", whyHi: "अगर आप थका हुआ महसूस कर रहे हैं, तो यह याद दिला सकता है कि अभी आपके सामने जो कदम है, उसी पर ध्यान दें—हर आने वाले परिणाम का बोझ एक साथ उठाने की ज़रूरत नहीं है।"
   },
   mind: {
     hindi: "मन को अभ्यास और संयम के द्वारा धीरे-धीरे स्थिर किया जा सकता है।",
     english: "The teaching points toward steadiness of the mind through practice, discipline and self-awareness.",
-    why: "If your thoughts feel overwhelming, this teaching can remind you that you do not have to solve every thought immediately. Steadiness can be developed one moment at a time."
+    whyEn: "If your thoughts feel overwhelming, this teaching can remind you that you do not have to solve every thought immediately. Steadiness can be developed one moment at a time.", whyHi: "अगर विचार बहुत भारी लग रहे हैं, तो यह याद दिला सकता है कि हर विचार को तुरंत हल करना ज़रूरी नहीं है। मन की स्थिरता धीरे-धीरे, एक-एक पल में विकसित की जा सकती है।"
   },
   fear: {
     hindi: "ज्ञान, आत्मबोध और अपने कर्तव्य पर टिके रहना भय के बीच भी भीतर स्थिरता ला सकता है।",
     english: "The teaching encourages clarity, self-knowledge and steadiness in the face of fear and uncertainty.",
-    why: "When fear is making the future feel larger than the present, this can be a reminder to return to what you can understand and do right now."
+    whyEn: "When fear is making the future feel larger than the present, this can be a reminder to return to what you can understand and do right now.", whyHi: "जब डर भविष्य को वर्तमान से बहुत बड़ा बना देता है, तब यह आपको याद दिला सकता है कि अभी आप जो समझ और कर सकते हैं, उसी पर वापस आएँ।"
   },
   peace: {
     hindi: "शांति बाहरी परिस्थितियों को पूरी तरह नियंत्रित करने से नहीं, बल्कि भीतर की आसक्ति और अस्थिरता को समझने से भी जुड़ी है।",
     english: "The teaching connects peace with understanding desire, attachment and the movements of the mind.",
-    why: "If you are searching for peace, this teaching can invite you to notice what is pulling your mind in different directions and gently return to balance."
+    whyEn: "If you are searching for peace, this teaching can invite you to notice what is pulling your mind in different directions and gently return to balance.", whyHi: "अगर आप शांति खोज रहे हैं, तो यह आपको यह देखने के लिए प्रेरित कर सकता है कि आपका मन किन चीज़ों से अलग-अलग दिशाओं में खिंच रहा है और धीरे-धीरे संतुलन की ओर लौट सकता है।"
   },
   detachment: {
     hindi: "आसक्ति को छोड़ना उदासीन होना नहीं है; यह कर्म करते हुए परिणाम से स्वयं को बाँधने से बचना है।",
     english: "The teaching distinguishes wholehearted action from becoming bound to the outcome of that action.",
-    why: "If you are struggling to let go, this may offer a different way to look at release: you can care deeply and still stop trying to control every outcome."
+    whyEn: "If you are struggling to let go, this may offer a different way to look at release: you can care deeply and still stop trying to control every outcome.", whyHi: "अगर किसी चीज़ को छोड़ना कठिन लग रहा है, तो यह एक अलग दृष्टिकोण दे सकता है: आप किसी चीज़ की गहराई से परवाह करते हुए भी हर परिणाम को नियंत्रित करने की कोशिश छोड़ सकते हैं।"
   },
   knowledge: {
     hindi: "स्पष्ट ज्ञान और आत्मबोध भ्रम के बीच दिशा देने वाले प्रकाश की तरह हैं।",
     english: "The teaching places value on clear understanding and self-knowledge when confusion clouds judgment.",
-    why: "When you do not know what to do, this can be a reminder to pause, seek clarity and separate what you know from what fear is telling you."
+    whyEn: "When you do not know what to do, this can be a reminder to pause, seek clarity and separate what you know from what fear is telling you.", whyHi: "जब समझ नहीं आता कि क्या करना है, तो यह रुकने, स्पष्टता खोजने और जो आप जानते हैं उसे डर की आवाज़ से अलग करने की याद दिला सकता है।"
   },
   duty: {
     hindi: "अपने कर्तव्य और वर्तमान जिम्मेदारी पर ईमानदारी से टिके रहना गीता की केंद्रीय शिक्षाओं में से एक है।",
     english: "The teaching emphasizes sincerely engaging with one's responsibility and present action.",
-    why: "When everything feels too much, narrowing your attention to the responsibility immediately in front of you can make the next step feel more manageable."
+    whyEn: "When everything feels too much, narrowing your attention to the responsibility immediately in front of you can make the next step feel more manageable.", whyHi: "जब सब कुछ बहुत ज़्यादा लगने लगे, तो अपने सामने मौजूद एक जिम्मेदारी पर ध्यान केंद्रित करना अगला कदम थोड़ा आसान बना सकता है।"
   },
   soul: {
     hindi: "गीता आत्मा को शरीर और परिस्थितियों से परे एक गहरे, स्थायी सत्य के रूप में देखती है।",
     english: "The teaching presents the self or soul as deeper than the changing body and circumstances.",
-    why: "If change or loss is weighing on you, this teaching offers the Gita's perspective that what changes outwardly does not define the whole of the self."
+    whyEn: "If change or loss is weighing on you, this teaching offers the Gita's perspective that what changes outwardly does not define the whole of the self.", whyHi: "अगर बदलाव या किसी खोने का दुख मन पर भारी है, तो यह गीता का वह दृष्टिकोण देता है कि बाहरी रूप से बदलने वाली चीज़ें आपके पूरे अस्तित्व को परिभाषित नहीं करतीं।"
   },
   devotion: {
     hindi: "समर्पण और भक्ति के माध्यम से मन को एक गहरे आधार और अर्थ की ओर मोड़ा जा सकता है।",
     english: "The teaching presents devotion and surrender as ways of orienting the mind toward a deeper source of meaning.",
-    why: "If you feel directionless, this can be an invitation to reconnect with what you deeply value rather than measuring yourself only through immediate success."
+    whyEn: "If you feel directionless, this can be an invitation to reconnect with what you deeply value rather than measuring yourself only through immediate success.", whyHi: "अगर आपको दिशा नहीं मिल रही, तो यह आपको उन मूल्यों से फिर जुड़ने का निमंत्रण दे सकता है जो आपके लिए सच में महत्वपूर्ण हैं, बजाय इसके कि आप खुद को केवल तुरंत मिलने वाली सफलता से आँकें।"
   }
 };
 
@@ -137,6 +137,8 @@ async function loadVerses() {
 }
 
 function getThemes(text) {
+  // Hindi/Devanagari is supported directly; matching does not require English.
+
   const lower = text.toLowerCase();
   const themes = new Set();
 
@@ -248,7 +250,8 @@ function renderResult(v, themes) {
       </div>
       <div class="why">
         <h3>Why this may speak to you</h3>
-        <p>${escapeHtml(g.why)}</p>
+        <p><strong>English:</strong> ${escapeHtml(g.whyEn || g.why || "")}</p>
+        <p><strong>हिंदी:</strong> ${escapeHtml(g.whyHi || "")}</p>
       </div>
       <div class="source">
         Sanskrit and English verse data: Gita Quotes dataset.

@@ -403,3 +403,19 @@ footer span { color: rgba(232,185,93,.55); margin: 0 7px; }
   html { scroll-behavior: auto; }
   * { animation: none !important; transition: none !important; }
 }
+
+
+/* Gita Reflection updates */
+#main-title {
+  white-space: nowrap;
+  font-size: clamp(52px, 8.2vw, 104px);
+  line-height: .9;
+}
+.meaning h3, .why h3 { letter-spacing: .01em; }
+.why p { margin-bottom: 12px; }
+@media (max-width: 600px) {
+  #main-title {
+    font-size: clamp(42px, 12.5vw, 68px);
+    letter-spacing: -.055em;
+  }
+}

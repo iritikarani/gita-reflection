@@ -1,32 +1,15 @@
-# Gita Reflection — Free Version
+# Gita Reflection — Free Static Version
 
-This version is completely client-side.
+A fully client-side Gita reflection website. No OpenAI API, no API key, no paid server and no Vercel function are required.
 
-## What changed
+Features:
+- Hindi and English user input
+- Topic-based matching to Gita verses
+- Sanskrit verse + Hindi meaning + English meaning
+- "Why this may speak to you" in English and Hindi
+- Responsive premium dark/navy interface
+- Static hosting friendly (GitHub Pages)
 
-- No OpenAI API
-- No API key
-- No Vercel function
-- No server-side code
-- No paid AI service
-- Runs as ordinary HTML/CSS/JavaScript
-- Suitable for GitHub Pages
+User text is processed locally in the browser. The site loads the public Gita verse dataset directly in the browser.
 
-The site loads the Gita verse dataset in the visitor's browser and uses local JavaScript topic matching to select a relevant verse. Hindi/English guidance is pre-written by theme, so there is no AI-generated response.
-
-## Publish on GitHub Pages
-
-1. Upload the files in this folder to the root of a **public GitHub repository**.
-2. In GitHub, open **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**.
-4. Choose the `main` branch and `/ (root)`.
-5. Save.
-6. GitHub will give you a `github.io` website URL.
-
-## Privacy
-
-User text is processed in the browser by this version and is not sent to an AI API.
-
-## Important
-
-This is a spiritual reflection tool, not medical or crisis treatment. The website includes a basic crisis-language safety screen and an India Tele-MANAS number (14416).
+For safety, crisis-language input shows a support message rather than presenting scripture as emergency treatment.
