@@ -1,0 +1,9 @@
+{
+  "name": "gita-reflection",
+  "private": true,
+  "version": "1.0.0",
+  "description": "AI-powered Bhagavad Gita reflection website",
+  "dependencies": {
+    "openai": "^5.12.0"
+  }
+}

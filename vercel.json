@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/gita.js": {
+      "maxDuration": 30
+    }
+  }
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#030712">
+  <meta name="description" content="A quiet place to find a relevant teaching from the Bhagavad Gita.">
+  <title>Gita — A Shlok for You</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <section class="hero" aria-labelledby="main-title">
+      <p class="eyebrow">SHRIMAD BHAGAVAD GITA</p>
+
+      <h1 id="main-title">What's<br><span>troubling you?</span></h1>
+
+      <div class="gold-divider" aria-hidden="true"><span></span></div>
+
+      <p class="subtitle">
+        Shlok to remember from<br>
+        <strong>Shrimad Bhagavad Gita</strong>
+      </p>
+
+      <form id="gita-form" class="search-wrap" autocomplete="off">
+        <label class="sr-only" for="trouble-input">What is troubling you?</label>
+        <textarea
+          id="trouble-input"
+          name="trouble"
+          rows="1"
+          maxlength="600"
+          placeholder="What's troubling you?"
+          aria-describedby="input-help"
+          required
+        ></textarea>
+
+        <button id="submit-btn" type="submit" aria-label="Find a shlok">
+          <span class="arrow">↑</span>
+        </button>
+      </form>
+
+      <p id="input-help" class="hint">Write it exactly as you feel it. English or Hindi.</p>
+
+      <div class="quick-prompts" aria-label="Example thoughts">
+        <button type="button" data-prompt="I'm tired and overwhelmed.">I'm tired</button>
+        <button type="button" data-prompt="I'm scared about my future.">I'm scared</button>
+        <button type="button" data-prompt="I failed and I feel useless.">I failed</button>
+        <button type="button" data-prompt="I can't stop overthinking.">Overthinking</button>
+      </div>
+    </section>
+
+    <section id="result" class="result-section" hidden aria-live="polite">
+      <div id="result-inner"></div>
+    </section>
+
+    <footer>
+      <span>✦</span> 701 SHLOKS <span>•</span> ETERNAL WISDOM <span>•</span> TIMELESS GUIDANCE <span>✦</span>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
