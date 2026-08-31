@@ -64,47 +64,47 @@ const guidance = {
   effort: {
     hindi: "अपने कर्म पर ध्यान देना और उसके परिणाम की चिंता में स्वयं को खो न देना इस शिक्षा का एक मुख्य संदेश है।",
     english: "The teaching emphasizes sincere action without allowing attachment to the result to disturb your inner balance.",
-    whyEn: "If you feel tired, this can be a gentle reminder to focus on the step that is in front of you rather than carrying the weight of every future result at once.", whyHi: "अगर आप थका हुआ महसूस कर रहे हैं, तो यह याद दिला सकता है कि अभी आपके सामने जो कदम है, उसी पर ध्यान दें—हर आने वाले परिणाम का बोझ एक साथ उठाने की ज़रूरत नहीं है।"
+    whyEn: "If you’re feeling tired, you don’t have to carry the weight of everything at once. Focus on the step that is in front of you, and let the rest unfold with time.", whyHi: "अगर आप बहुत थक गए हैं, तो हर चीज़ का बोझ एक साथ उठाना ज़रूरी नहीं है। इस समय जो आपके सामने है, बस उस पर ध्यान दें और बाकी चीज़ों को धीरे-धीरे अपने समय पर होने दें।"
   },
   mind: {
     hindi: "मन को अभ्यास और संयम के द्वारा धीरे-धीरे स्थिर किया जा सकता है।",
     english: "The teaching points toward steadiness of the mind through practice, discipline and self-awareness.",
-    whyEn: "If your thoughts feel overwhelming, this teaching can remind you that you do not have to solve every thought immediately. Steadiness can be developed one moment at a time.", whyHi: "अगर विचार बहुत भारी लग रहे हैं, तो यह याद दिला सकता है कि हर विचार को तुरंत हल करना ज़रूरी नहीं है। मन की स्थिरता धीरे-धीरे, एक-एक पल में विकसित की जा सकती है।"
+    whyEn: "When your thoughts feel overwhelming, remember that you don’t have to solve everything at once. With patience and practice, the mind can become steadier.", whyHi: "जब विचार बहुत ज़्यादा परेशान करने लगें, तो याद रखें कि हर बात का हल एक साथ निकालना ज़रूरी नहीं है। धैर्य और अभ्यास के साथ मन को धीरे-धीरे शांत और स्थिर किया जा सकता है।"
   },
   fear: {
     hindi: "ज्ञान, आत्मबोध और अपने कर्तव्य पर टिके रहना भय के बीच भी भीतर स्थिरता ला सकता है।",
     english: "The teaching encourages clarity, self-knowledge and steadiness in the face of fear and uncertainty.",
-    whyEn: "When fear is making the future feel larger than the present, this can be a reminder to return to what you can understand and do right now.", whyHi: "जब डर भविष्य को वर्तमान से बहुत बड़ा बना देता है, तब यह आपको याद दिला सकता है कि अभी आप जो समझ और कर सकते हैं, उसी पर वापस आएँ।"
+    whyEn: "When fear makes the future feel uncertain, come back to what you can understand and do today. You only need to take the next step.", whyHi: "जब डर की वजह से भविष्य अनिश्चित और भारी लगने लगे, तो वापस उस पर ध्यान दें जिसे आप आज समझ और कर सकते हैं। आपको बस अगला कदम उठाना है।"
   },
   peace: {
     hindi: "शांति बाहरी परिस्थितियों को पूरी तरह नियंत्रित करने से नहीं, बल्कि भीतर की आसक्ति और अस्थिरता को समझने से भी जुड़ी है।",
     english: "The teaching connects peace with understanding desire, attachment and the movements of the mind.",
-    whyEn: "If you are searching for peace, this teaching can invite you to notice what is pulling your mind in different directions and gently return to balance.", whyHi: "अगर आप शांति खोज रहे हैं, तो यह आपको यह देखने के लिए प्रेरित कर सकता है कि आपका मन किन चीज़ों से अलग-अलग दिशाओं में खिंच रहा है और धीरे-धीरे संतुलन की ओर लौट सकता है।"
+    whyEn: "If you’re looking for peace, gently notice what is disturbing your mind instead of fighting every thought. Sometimes, peace begins with accepting what you cannot control.", whyHi: "अगर आप मन की शांति चाहते हैं, तो हर विचार से लड़ने के बजाय धीरे से देखें कि आपका मन किस बात से परेशान है। कई बार शांति वहीं से शुरू होती है जहाँ हम उन चीज़ों को स्वीकार करना सीखते हैं जिन्हें हम नियंत्रित नहीं कर सकते।"
   },
   detachment: {
     hindi: "आसक्ति को छोड़ना उदासीन होना नहीं है; यह कर्म करते हुए परिणाम से स्वयं को बाँधने से बचना है।",
     english: "The teaching distinguishes wholehearted action from becoming bound to the outcome of that action.",
-    whyEn: "If you are struggling to let go, this may offer a different way to look at release: you can care deeply and still stop trying to control every outcome.", whyHi: "अगर किसी चीज़ को छोड़ना कठिन लग रहा है, तो यह एक अलग दृष्टिकोण दे सकता है: आप किसी चीज़ की गहराई से परवाह करते हुए भी हर परिणाम को नियंत्रित करने की कोशिश छोड़ सकते हैं।"
+    whyEn: "Letting go doesn’t mean that you stop caring. It means doing what you can with sincerity while releasing the need to control every outcome.", whyHi: "किसी चीज़ को छोड़ देना यह नहीं है कि आपको उसकी परवाह नहीं रही। इसका अर्थ है कि आप पूरी ईमानदारी से अपना प्रयास करें और हर परिणाम को अपने नियंत्रण में रखने की ज़रूरत छोड़ दें।"
   },
   knowledge: {
     hindi: "स्पष्ट ज्ञान और आत्मबोध भ्रम के बीच दिशा देने वाले प्रकाश की तरह हैं।",
     english: "The teaching places value on clear understanding and self-knowledge when confusion clouds judgment.",
-    whyEn: "When you do not know what to do, this can be a reminder to pause, seek clarity and separate what you know from what fear is telling you.", whyHi: "जब समझ नहीं आता कि क्या करना है, तो यह रुकने, स्पष्टता खोजने और जो आप जानते हैं उसे डर की आवाज़ से अलग करने की याद दिला सकता है।"
+    whyEn: "When you feel confused, give yourself permission to pause. Clarity often comes when we separate what we truly know from what fear or overthinking is telling us.", whyHi: "जब आप उलझन में हों, तो खुद को थोड़ा रुकने का समय दें। स्पष्टता अक्सर तब आती है जब हम अपनी वास्तविक समझ को डर और ज़्यादा सोचने से अलग करके देखते हैं।"
   },
   duty: {
     hindi: "अपने कर्तव्य और वर्तमान जिम्मेदारी पर ईमानदारी से टिके रहना गीता की केंद्रीय शिक्षाओं में से एक है।",
     english: "The teaching emphasizes sincerely engaging with one's responsibility and present action.",
-    whyEn: "When everything feels too much, narrowing your attention to the responsibility immediately in front of you can make the next step feel more manageable.", whyHi: "जब सब कुछ बहुत ज़्यादा लगने लगे, तो अपने सामने मौजूद एक जिम्मेदारी पर ध्यान केंद्रित करना अगला कदम थोड़ा आसान बना सकता है।"
+    whyEn: "When everything feels like too much, bring your attention back to the one thing you can do right now. You don’t have to finish the whole journey today.", whyHi: "जब सब कुछ बहुत ज़्यादा लगने लगे, तो अपना ध्यान उस एक काम पर वापस लाएँ जो आप अभी कर सकते हैं। पूरी यात्रा आज ही पूरी करना ज़रूरी नहीं है।"
   },
   soul: {
     hindi: "गीता आत्मा को शरीर और परिस्थितियों से परे एक गहरे, स्थायी सत्य के रूप में देखती है।",
     english: "The teaching presents the self or soul as deeper than the changing body and circumstances.",
-    whyEn: "If change or loss is weighing on you, this teaching offers the Gita's perspective that what changes outwardly does not define the whole of the self.", whyHi: "अगर बदलाव या किसी खोने का दुख मन पर भारी है, तो यह गीता का वह दृष्टिकोण देता है कि बाहरी रूप से बदलने वाली चीज़ें आपके पूरे अस्तित्व को परिभाषित नहीं करतीं।"
+    whyEn: "If change or loss is hurting you, this teaching offers the Gita’s perspective that our deepest self is more than the things that change around us.", whyHi: "अगर बदलाव या किसी को खोने का दुख आपको भीतर से परेशान कर रहा है, तो गीता यह दृष्टिकोण देती है कि हमारा गहरा अस्तित्व हमारे आसपास बदलने वाली चीज़ों से कहीं अधिक है।"
   },
   devotion: {
     hindi: "समर्पण और भक्ति के माध्यम से मन को एक गहरे आधार और अर्थ की ओर मोड़ा जा सकता है।",
     english: "The teaching presents devotion and surrender as ways of orienting the mind toward a deeper source of meaning.",
-    whyEn: "If you feel directionless, this can be an invitation to reconnect with what you deeply value rather than measuring yourself only through immediate success.", whyHi: "अगर आपको दिशा नहीं मिल रही, तो यह आपको उन मूल्यों से फिर जुड़ने का निमंत्रण दे सकता है जो आपके लिए सच में महत्वपूर्ण हैं, बजाय इसके कि आप खुद को केवल तुरंत मिलने वाली सफलता से आँकें।"
+    whyEn: "If you feel lost or without direction, reconnecting with what you deeply value can give the heart a sense of meaning and steadiness.", whyHi: "अगर आपको लग रहा है कि आप रास्ता भटक गए हैं, तो उन चीज़ों और मूल्यों से दोबारा जुड़ना जो आपके लिए सच में मायने रखते हैं, मन को अर्थ और स्थिरता दे सकता है।"
   }
 };
 
@@ -147,6 +147,29 @@ function getThemes(text) {
   }
   for (const [word, tags] of Object.entries(hindiThemes)) {
     if (text.includes(word)) tags.forEach(t => themes.add(t));
+  }
+
+  // Natural Hindi/Hinglish phrases people commonly type.
+  const phraseThemes = [
+    [/थक(ा|ी|े)? गया|थक(ा|ी|े)? गई|thak gaya|thak gayi|bahut tired|very tired/i, ["tired","effort","rest"]],
+    [/परेशान हूँ|परेशान हूं|बहुत परेशान|pareshan hoon|pareshan hun|bahut pareshan/i, ["overwhelmed","peace","mind"]],
+    [/समझ नहीं आ रहा|समझ नहीं आता|samajh nahi aa raha|samajh nahi aata/i, ["confusion","knowledge","wisdom"]],
+    [/क्या करूँ|क्या करूं|kya karu|kya karoon/i, ["confusion","duty","action"]],
+    [/भविष्य.*चिंता|future.*tension|future.*worry|future ko lekar tension|bhavishya.*chinta/i, ["future","fear","action"]],
+    [/डर लग|बहुत डर|dar lag|bahut dar|scared|afraid/i, ["fear","courage","peace"]],
+    [/मन उदास|मन भारी|दिल उदास|mann udaas|man udaas|dil udaas|feeling low|feel low/i, ["sad","grief","peace"]],
+    [/बहुत सोच|ज्यादा सोच|ज़्यादा सोच|overthink|overthinking|soch.*nahi ruk/i, ["overthinking","mind","peace"]],
+    [/गुस्सा|क्रोध|gussa|gusse|angry|anger/i, ["anger","mind","control"]],
+    [/अकेला|अकेली|अकेलापन|akela|akeli|akelapan|lonely|alone/i, ["lonely","self","compassion"]],
+    [/निराश|उम्मीद नहीं|nirash|umeed nahi|hopeless|hopelessness/i, ["sad","peace","self"]],
+    [/खुद पर शक|मुझ पर भरोसा नहीं|khud par shak|confidence nahi|self doubt|doubt myself/i, ["self","knowledge","courage"]],
+    [/उद्देश्य|मकसद|मेरा purpose|purpose nahi|uddeshya|purpose/i, ["purpose","duty","action"]],
+    [/शांति चाहिए|मन की शांति|shanti chahiye|mann ki shanti|peace chahiye/i, ["peace","equanimity","mind"]],
+    [/छोड़ नहीं पा|छोड़ना मुश्किल|chhod nahi pa|chhodna mushkil|can't let go|cannot let go/i, ["detachment","attachment","peace"]],
+    [/जीवन|जिंदगी|zindagi|jeevan|life/i, ["life","soul","knowledge"]]
+  ];
+  for (const [pattern, tags] of phraseThemes) {
+    if (pattern.test(text)) tags.forEach(t => themes.add(t));
   }
   if (!themes.size) {
     ["mind","action","knowledge","peace","duty","detachment"].forEach(t => themes.add(t));
