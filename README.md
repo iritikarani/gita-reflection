@@ -13,7 +13,7 @@ A calm place to pause, reflect, and find perspective through the wisdom of the B
 - **My Journey** — saved reflections, gentle non-diagnostic patterns, filters, saved verses, monthly summary with print-to-PDF.
 - **7 Days with the Gita** — tracked guided journey with a downloadable completion card.
 - **Share cards** — canvas images for Instagram (native share), WhatsApp, copy text, download.
-- **Accounts** — sign up, log in, log out, forgot password; the first reflection never needs an account.
+- **Accounts** — sign up, log in, log out, forgot password; the first reflection never needs an account. With Supabase connected, accounts sync across devices and password resets go by email (see [SUPABASE.md](SUPABASE.md)).
 - **Premium & shop** — pricing and products; buttons show "Coming soon" until payment links are configured.
 - **Guides (SEO)** — static pages in `gita/` for anxiety, overthinking, failure, fear, letting go, purpose, difficult times and relationships, plus a page per verse and `sitemap.xml`.
 - Four themes (Ivory, Dusk free; Sandalwood, Sage premium), optional generated ambient sound (off by default), reduced-motion support.
@@ -23,6 +23,7 @@ A calm place to pause, reflect, and find perspective through the wisdom of the B
 ```
 npm run serve        # http://localhost:8080
 npm test             # Playwright smoke test (every route × 6 viewports + core flows)
+npm run test:supabase  # Supabase flows against a local mock of the Supabase API
 ```
 No build step for the app. After editing verse or guide content, regenerate the static pages:
 ```
@@ -30,6 +31,7 @@ SITE_URL=https://your-domain.example npm run build
 ```
 
 ## Configure before launch — `assets/js/config.js`
+- `supabase.url`, `supabase.anonKey` — connect Supabase for real accounts (setup: [SUPABASE.md](SUPABASE.md)). Leave empty to keep accounts in each visitor's browser.
 - `contactEmail` — shown on Contact and "Coming soon" dialogs.
 - `payments.*` — Razorpay Payment Page / Stripe Payment Link URLs. While empty, purchases show "Coming soon".
 - `pricing`, `freeSavedLimit`.
@@ -39,5 +41,7 @@ SITE_URL=https://your-domain.example npm run build
 Static, framework-free ES modules (`assets/js`), hash routing, views lazy-loaded per route.
 - `data/` — verses, emotions & lexicon, 7-day journey, guide content (single source for the app and static pages).
 - `matcher.js` — matches words to verses in the browser; nothing typed is sent anywhere.
-- `store.js` — **local account provider**: accounts and reflections live in the browser (PBKDF2-hashed passwords). Accounts do not sync across devices, and "forgot password" resets on the device that holds the account. Swap this one file for a hosted backend (e.g. Supabase) to get syncing and email resets; the views only use its exported functions.
+- `store.js` — accounts and saved data. Pages read from an in-memory copy; writes go, in order, to one of two backends:
+  - `backends/supabase.js` — Supabase Auth + Postgres with row-level security (`supabase/schema.sql`), used when configured. Loads a slim vendored client (`assets/vendor/supabase-slim.mjs`, ~30 KB gzipped) only in that case.
+  - `backends/local.js` — accounts stored in the visitor's browser (PBKDF2-hashed passwords); the default when Supabase isn't configured.
 - `api/gita.js` is the earlier optional OpenAI endpoint; the current site does not call it.

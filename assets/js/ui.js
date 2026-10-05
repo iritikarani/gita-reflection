@@ -87,6 +87,9 @@ export function toast(message) {
 }
 
 // ---- Modal (accessible dialog) ----
+const openModals = new Set();
+export function closeAllModals() { [...openModals].forEach(close => close({ restoreFocus: false })); }
+
 export function openModal({ title, body, className = "", onOpen, labelledBy }) {
   const previous = document.activeElement;
   const wrap = document.createElement("div");
@@ -102,15 +105,18 @@ export function openModal({ title, body, className = "", onOpen, labelledBy }) {
   document.body.classList.add("modal-open");
   const modal = wrap.querySelector(".modal");
 
-  function close() {
+  function close({ restoreFocus = true } = {}) {
+    if (!openModals.has(close)) return;
+    openModals.delete(close);
     wrap.classList.remove("show");
     document.removeEventListener("keydown", onKey);
     setTimeout(() => {
       wrap.remove();
       if (!document.querySelector(".modal-backdrop")) document.body.classList.remove("modal-open");
     }, 260);
-    if (previous && previous.focus) previous.focus();
+    if (restoreFocus && previous && previous.focus) previous.focus();
   }
+  openModals.add(close);
 
   function focusables() {
     return [...modal.querySelectorAll('a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])')]
@@ -130,7 +136,7 @@ export function openModal({ title, body, className = "", onOpen, labelledBy }) {
 
   document.addEventListener("keydown", onKey);
   wrap.addEventListener("click", e => { if (e.target === wrap) close(); });
-  wrap.querySelector(".modal-close").addEventListener("click", close);
+  wrap.querySelector(".modal-close").addEventListener("click", () => close());
   requestAnimationFrame(() => {
     wrap.classList.add("show");
     const f = focusables();

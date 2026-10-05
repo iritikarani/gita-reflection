@@ -3,6 +3,14 @@ export const CONFIG = {
   siteName: "Gita Reflection",
   tagline: "A calm place to pause, reflect, and find perspective through the wisdom of the Bhagavad Gita.",
 
+  // Accounts & saved reflections. Leave empty to keep accounts in each visitor's
+  // browser only. Fill both in to use Supabase (see SUPABASE.md). The anon key is
+  // public by design — your data is protected by the row-level security in supabase/schema.sql.
+  supabase: {
+    url: "",      // e.g. "https://abcdefgh.supabase.co"
+    anonKey: ""   // Project Settings → API → "anon public" (or the publishable) key
+  },
+
   // Shown on the Contact page. Leave empty to hide the email address.
   contactEmail: "",
 

@@ -74,7 +74,7 @@ export function render(root, { navigate }) {
 
     <div class="setting-card">
       <h2 class="section-label">Your data</h2>
-      <p class="muted">Everything is stored in this browser. Download a copy anytime.</p>
+      <p class="muted">${store.backendMode() === "supabase" ? "Your reflections are saved securely to your account. Download a copy anytime." : "Everything is stored in this browser. Download a copy anytime."}</p>
       <div class="row">
         <button class="btn btn-ghost btn-sm" type="button" data-export>${icon("download")}<span>Download my data</span></button>
         <button class="btn btn-ghost btn-sm" type="button" data-logout>Log out</button>
@@ -85,9 +85,9 @@ export function render(root, { navigate }) {
 
   root.querySelector("#name-form").addEventListener("submit", e => {
     e.preventDefault();
-    store.updateProfile({ name: root.querySelector("#name").value });
-    toast("Name updated.");
-    render(root, { navigate });
+    store.updateProfile({ name: root.querySelector("#name").value })
+      .then(() => { toast("Name updated."); render(root, { navigate }); })
+      .catch(err => toast(err.message));
   });
 
   root.querySelectorAll("[data-theme-opt]").forEach(btn => btn.addEventListener("click", () => {
@@ -107,14 +107,18 @@ export function render(root, { navigate }) {
   root.querySelector("[data-remind]").addEventListener("click", downloadReminder);
   root.querySelector("[data-export]").addEventListener("click", () =>
     downloadBlob(new Blob([store.exportData()], { type: "application/json" }), "gita-reflection-data.json"));
-  root.querySelector("[data-logout]").addEventListener("click", () => { store.logOut(); toast("You've logged out."); navigate("/"); });
+  root.querySelector("[data-logout]").addEventListener("click", async () => { await store.logOut(); toast("You've logged out."); navigate("/"); });
   root.querySelector("[data-delete]").addEventListener("click", () => openModal({
     title: "Delete your account?",
-    body: `<p>This permanently removes your account and every saved reflection from this device. You may want to download your data first.</p>
+    body: `<p>This permanently removes your account and every saved reflection${store.backendMode() === "supabase" ? "" : " from this device"}. You may want to download your data first.</p>
       <div class="row-end"><button class="btn btn-ghost" type="button" data-no>Keep my account</button><button class="btn btn-danger" type="button" data-yes>Delete everything</button></div>`,
     onOpen: (el, close) => {
       el.querySelector("[data-no]").addEventListener("click", close);
-      el.querySelector("[data-yes]").addEventListener("click", () => { store.deleteAccount(); close(); toast("Your account has been deleted."); navigate("/"); });
+      el.querySelector("[data-yes]").addEventListener("click", async e => {
+        e.currentTarget.disabled = true;
+        try { await store.deleteAccount(); close(); toast("Your account has been deleted."); navigate("/"); }
+        catch (err) { close(); toast(err.message || "We couldn't delete your account just now."); }
+      });
     }
   }));
 }

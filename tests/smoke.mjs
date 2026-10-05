@@ -167,6 +167,19 @@ await step("crisis language shows support, not a verse", async () => {
   if (!page.url().endsWith("#/")) throw new Error("navigated away to a reflection");
 });
 
+await step("one save opens one prompt, even after visiting other pages", async () => {
+  for (const r of ["#/daily", "#/journey", "#/library", "#/"]) { await page.goto(BASE + r); await settle(page); }
+  await page.click('[data-emotion="tired"]');
+  await page.waitForSelector("#reflection-text");
+  await page.click('[data-act="save"]');
+  await page.waitForSelector(".join-modal");
+  await page.waitForTimeout(300);
+  const n = await page.locator(".modal-backdrop").count();
+  if (n !== 1) throw new Error(`${n} dialogs opened`);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(400);
+});
+
 await step("save as guest asks to create an account", async () => {
   await page.goto(BASE + "#/");
   await page.click('[data-emotion="scared"]');

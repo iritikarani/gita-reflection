@@ -15,15 +15,39 @@ function field({ id, label, type = "text", autocomplete, value = "", hint }) {
     </div>`;
 }
 
-const DEVICE_NOTE = "Your account and reflections are stored privately in this browser, on this device.";
+function privacyNote() {
+  return store.backendMode() === "supabase"
+    ? "Your reflections are private to your account. We never sell or share them."
+    : "Your account and reflections are stored privately in this browser, on this device.";
+}
+
+function messageCard(root, { title, text, action }) {
+  root.innerHTML = `
+  <section class="auth wrap">
+    <div class="auth-card center">
+      <div class="empty-orb" aria-hidden="true"></div>
+      <h1>${esc(title)}</h1>
+      <p class="muted">${esc(text)}</p>
+      ${action || ""}
+    </div>
+  </section>`;
+}
 
 export function render(root, { mode, query }) {
   const next = query.next || "";
   const nextQ = next ? `?next=${encodeURIComponent(next)}` : "";
+  const remote = store.backendMode() === "supabase";
 
-  if (store.currentUser() && mode !== "forgot") {
-    root.innerHTML = `<section class="wrap narrow page-pad center"><h1>You're already logged in</h1><p class="lead">Welcome back.</p><a class="btn btn-primary" href="#/journey">Go to My Journey</a></section>`;
+  if (store.currentUser() && (mode === "signup" || mode === "login")) {
+    root.innerHTML = `<section class="wrap narrow page-pad center"><h1>You're already logged in</h1><p class="lead center">Welcome back.</p><a class="btn btn-primary" href="#/journey">Go to My Journey</a></section>`;
     return;
+  }
+  if (mode === "reset" && (!remote || !store.currentUser())) {
+    return messageCard(root, {
+      title: "This reset link isn't active",
+      text: "Password links work once and expire after a while. You can request a new one.",
+      action: `<a class="btn btn-primary" href="#/forgot">Request a new link</a>`
+    });
   }
 
   const content = {
@@ -49,14 +73,22 @@ export function render(root, { mode, query }) {
     },
     forgot: {
       title: "Reset your password",
-      lead: "Enter the email you signed up with.",
+      lead: remote ? "Enter the email you signed up with and we'll send you a link to choose a new password." : "Enter the email you signed up with.",
       form: `
         ${field({ id: "email", label: "Email", type: "email", autocomplete: "email" })}
         <div class="reset-step" hidden>
           ${field({ id: "password", label: "New password", type: "password", autocomplete: "new-password", hint: "At least 8 characters." })}
         </div>
-        <button class="btn btn-primary btn-block" type="submit">Continue</button>`,
+        <button class="btn btn-primary btn-block" type="submit">${remote ? "Send reset link" : "Continue"}</button>`,
       foot: `Remembered it? <a href="#/login${nextQ}">Log in</a>`
+    },
+    reset: {
+      title: "Choose a new password",
+      lead: "Almost there. Pick a new password for your account.",
+      form: `
+        ${field({ id: "password", label: "New password", type: "password", autocomplete: "new-password", hint: "At least 8 characters." })}
+        <button class="btn btn-primary btn-block" type="submit">Save new password</button>`,
+      foot: ""
     }
   }[mode];
 
@@ -64,13 +96,13 @@ export function render(root, { mode, query }) {
   <section class="auth wrap">
     <div class="auth-card">
       <h1>${esc(content.title)}</h1>
-      <p class="muted">${esc(content.lead)}</p>
+      <p class="muted auth-lead">${esc(content.lead)}</p>
       <form id="auth-form" novalidate>
         <div class="form-error" role="alert" aria-live="assertive"></div>
         ${content.form}
       </form>
-      <p class="auth-foot">${content.foot}</p>
-      <p class="fine center">${icon("lock")} ${esc(DEVICE_NOTE)}</p>
+      ${content.foot ? `<p class="auth-foot">${content.foot}</p>` : ""}
+      <p class="fine center">${icon("lock")} ${esc(privacyNote())}</p>
     </div>
   </section>`;
 
@@ -101,20 +133,34 @@ export function render(root, { mode, query }) {
     submit.textContent = "One moment…";
     try {
       if (mode === "signup") {
-        await store.signUp({ name: val("name"), email: val("email"), password: val("password") });
+        const res = await store.signUp({ name: val("name"), email: val("email"), password: val("password") });
+        if (res.needsConfirmation) {
+          return messageCard(root, {
+            title: "Check your inbox",
+            text: `We've sent a confirmation link to ${val("email").trim()}. Open it to finish creating your account — anything you were saving will be waiting.`,
+            action: `<a class="btn btn-ghost" href="#/">Return home</a>`
+          });
+        }
         toast("Welcome. Your account is ready.");
         afterAuth(next || "/journey");
       } else if (mode === "login") {
         await store.logIn({ email: val("email"), password: val("password") });
         toast("Welcome back.");
         afterAuth(next || "/journey");
+      } else if (mode === "forgot" && remote) {
+        await store.requestPasswordReset(val("email"));
+        return messageCard(root, {
+          title: "Check your inbox",
+          text: `If an account exists for ${val("email").trim()}, you'll receive a link to choose a new password. It may take a minute to arrive.`,
+          action: `<a class="btn btn-ghost" href="#/login">Back to log in</a>`
+        });
       } else if (mode === "forgot") {
         if (!resetReady) {
           if (!store.accountExists(val("email"))) throw new Error("We couldn't find an account with that email on this device. Accounts are stored in the browser where they were created.");
           resetReady = true;
           form.querySelector(".reset-step").hidden = false;
           form.querySelector("#email").readOnly = true;
-          root.querySelector(".muted").textContent = "Because your account lives on this device, you can choose a new password right here.";
+          root.querySelector(".auth-lead").textContent = "Because your account lives on this device, you can choose a new password right here.";
           form.querySelector("#password").focus();
           submit.disabled = false;
           submit.textContent = "Set new password";
@@ -123,6 +169,10 @@ export function render(root, { mode, query }) {
         await store.resetPassword({ email: val("email"), password: val("password") });
         toast("Your password has been updated.");
         afterAuth(next || "/journey");
+      } else if (mode === "reset") {
+        await store.updatePassword(val("password"));
+        toast("Your new password is saved.");
+        afterAuth("/journey");
       }
     } catch (err) {
       error.textContent = err.message || "Something went wrong. Please try again.";

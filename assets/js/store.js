@@ -1,83 +1,89 @@
-// Accounts and saved data.
+// Accounts and saved data — the only module views talk to.
 //
-// This is the "local" provider: accounts and reflections live only in this
-// browser (localStorage), passwords are hashed with PBKDF2 and never leave the
-// device. Every view talks to the functions exported here, so a hosted backend
-// (Supabase, Firebase, your own API) can replace this file without touching the UI.
+// Reads are synchronous from an in-memory copy of the signed-in person's data.
+// Writes update that copy immediately, then go to the backend in order:
+//   • Supabase (when configured in config.js) — real accounts, synced everywhere
+//   • local — accounts stored privately in this browser (the default)
 import { CONFIG } from "./config.js";
-
-const PREFIX = "gr.";
-const memory = new Map();
-
-const storage = {
-  get(key, fallback = null) {
-    try {
-      const raw = localStorage.getItem(PREFIX + key);
-      return raw == null ? fallback : JSON.parse(raw);
-    } catch {
-      return memory.has(key) ? memory.get(key) : fallback;
-    }
-  },
-  set(key, value) {
-    memory.set(key, value);
-    try { localStorage.setItem(PREFIX + key, JSON.stringify(value)); } catch { /* private mode: memory only */ }
-  },
-  remove(key) {
-    memory.delete(key);
-    try { localStorage.removeItem(PREFIX + key); } catch { /* ignore */ }
-  }
-};
-
-const session = {
-  get(key, fallback = null) {
-    try { const raw = sessionStorage.getItem(PREFIX + key); return raw == null ? fallback : JSON.parse(raw); }
-    catch { return fallback; }
-  },
-  set(key, value) {
-    try { sessionStorage.setItem(PREFIX + key, JSON.stringify(value)); } catch { /* ignore */ }
-  },
-  remove(key) {
-    try { sessionStorage.removeItem(PREFIX + key); } catch { /* ignore */ }
-  }
-};
+import { storage, session } from "./storage.js";
+import { createLocalBackend } from "./backends/local.js";
 
 export { session };
+
+const EMPTY = () => ({ reflections: [], savedVerses: [], journey: { completed: [], entries: {}, finishedAt: null }, monthNotes: {} });
+
+let backend = createLocalBackend();
+let me = null;
+let data = EMPTY();
+let readyPromise = null;
 
 // ---- change notifications ----
 const listeners = new Set();
 export function subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
-function emit() { listeners.forEach(fn => { try { fn(); } catch (e) { console.error(e); } }); }
+function emit(detail = {}) { listeners.forEach(fn => { try { fn(detail); } catch (e) { console.error(e); } }); }
 
-// ---- password hashing ----
-function toHex(buf) { return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join(""); }
+let errorHandler = message => console.error(message);
+export function onError(fn) { errorHandler = fn; }
 
-async function hashPassword(password, saltHex) {
-  if (!window.crypto?.subtle) throw new Error("Accounts need a secure (https) connection.");
-  const salt = saltHex
-    ? new Uint8Array(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)))
-    : crypto.getRandomValues(new Uint8Array(16));
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
-  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: 150000, hash: "SHA-256" }, key, 256);
-  return { salt: toHex(salt), hash: toHex(bits) };
+function setSession(result) {
+  me = result?.user || null;
+  data = me ? { ...EMPTY(), ...(result.data || {}) } : EMPTY();
+  data.journey = { ...EMPTY().journey, ...(data.journey || {}) };
 }
 
-function normEmail(email) { return String(email || "").trim().toLowerCase(); }
+export function supabaseConfigured() {
+  return Boolean(CONFIG.supabase?.url && CONFIG.supabase?.anonKey);
+}
 
-function validEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+// Called once at start-up, before the first page renders.
+export function init() {
+  if (readyPromise) return readyPromise;
+  readyPromise = (async () => {
+    if (supabaseConfigured()) {
+      try {
+        const { createSupabaseBackend } = await import("./backends/supabase.js");
+        backend = await createSupabaseBackend(CONFIG.supabase, {
+          onAuthEvent: ({ event, user, data: d }) => {
+            if (event === "SIGNED_OUT" && !me) return;
+            setSession({ user, data: d });
+            emit({ event });
+          }
+        });
+      } catch (e) {
+        console.error("Could not start Supabase; using local accounts.", e);
+        backend = createLocalBackend();
+      }
+    }
+    try { setSession(await backend.init()); }
+    catch (e) { console.error(e); setSession(null); }
+  })();
+  return readyPromise;
+}
+
+export function backendMode() { return backend.mode; }
+
+// ---- write queue: keeps writes in order, reports failures gently ----
+let queue = Promise.resolve();
+function write(fn) {
+  const snapshot = JSON.parse(JSON.stringify(data));
+  queue = queue.then(() => fn(snapshot)).catch(e => {
+    console.error(e);
+    const msg = String(e?.message || "");
+    errorHandler(/free_limit_reached/.test(msg)
+      ? "Your free journal is full, so that reflection couldn't be saved."
+      : "We couldn't save that just now. Please check your connection and try again.");
+  });
+  return queue;
+}
+export function flush() { return queue; }
+
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 9));
+const normEmail = email => String(email || "").trim().toLowerCase();
+const validEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 // ---- accounts ----
-function users() { return storage.get("users", {}); }
-function saveUsers(u) { storage.set("users", u); }
-
-export function currentUser() {
-  const email = storage.get("session");
-  if (!email) return null;
-  const u = users()[email];
-  if (!u) return null;
-  return { email, name: u.name, plan: u.plan || "free", createdAt: u.createdAt };
-}
-
-export function isPremium() { return currentUser()?.plan === "premium"; }
+export function currentUser() { return me; }
+export function isPremium() { return me?.plan === "premium"; }
 
 export async function signUp({ name, email, password }) {
   email = normEmail(email);
@@ -85,176 +91,147 @@ export async function signUp({ name, email, password }) {
   if (!name) throw new Error("Please tell us what to call you.");
   if (!validEmail(email)) throw new Error("Please enter a valid email address.");
   if (String(password || "").length < 8) throw new Error("Please choose a password of at least 8 characters.");
-  const all = users();
-  if (all[email]) throw new Error("An account with this email already exists on this device. Try logging in instead.");
-  const { salt, hash } = await hashPassword(password);
-  all[email] = { name, salt, hash, plan: "free", createdAt: Date.now() };
-  saveUsers(all);
-  storage.set("session", email);
-  adoptGuestData(email);
-  emit();
-  return currentUser();
+  const result = await backend.signUp({ name, email, password });
+  if (result.needsConfirmation) return { needsConfirmation: true };
+  setSession(result);
+  emit({ event: "SIGNED_IN" });
+  return { user: me };
 }
 
 export async function logIn({ email, password }) {
   email = normEmail(email);
   if (!validEmail(email)) throw new Error("Please enter a valid email address.");
   if (!password) throw new Error("Please enter your password.");
-  const u = users()[email];
-  if (!u) throw new Error("We couldn't find that email and password on this device.");
-  const { hash } = await hashPassword(password, u.salt);
-  if (hash !== u.hash) throw new Error("We couldn't find that email and password on this device.");
-  storage.set("session", email);
-  adoptGuestData(email);
-  emit();
-  return currentUser();
+  setSession(await backend.logIn({ email, password }));
+  emit({ event: "SIGNED_IN" });
+  return me;
 }
 
-export function logOut() {
-  storage.remove("session");
-  emit();
+export async function logOut() {
+  await flush();
+  await backend.logOut();
+  setSession(null);
+  emit({ event: "SIGNED_OUT" });
 }
 
-export function accountExists(email) { return Boolean(users()[normEmail(email)]); }
+// Local accounts only: does this browser hold an account for this email?
+export function accountExists(email) { return backend.accountExists?.(normEmail(email)) ?? false; }
 
-// Local accounts have no email server, so a reset happens on the device that holds the account.
-export async function resetPassword({ email, password }) {
+// Supabase: email a reset link. Local: not available (use resetPassword on this device).
+export async function requestPasswordReset(email) {
   email = normEmail(email);
-  const all = users();
-  if (!all[email]) throw new Error("We couldn't find an account with that email on this device.");
+  if (!validEmail(email)) throw new Error("Please enter a valid email address.");
+  await backend.requestPasswordReset(email);
+}
+
+// Local accounts: set a new password on the device that holds the account.
+export async function resetPassword({ email, password }) {
   if (String(password || "").length < 8) throw new Error("Please choose a password of at least 8 characters.");
-  const { salt, hash } = await hashPassword(password);
-  all[email] = { ...all[email], salt, hash };
-  saveUsers(all);
-  storage.set("session", email);
-  emit();
+  setSession(await backend.resetPassword({ email: normEmail(email), password }));
+  emit({ event: "SIGNED_IN" });
 }
 
-export function updateProfile({ name }) {
-  const me = currentUser();
+// Supabase: set a new password for the signed-in (or recovering) user.
+export async function updatePassword(password) {
+  if (String(password || "").length < 8) throw new Error("Please choose a password of at least 8 characters.");
+  await backend.updatePassword(password);
+}
+
+export async function updateProfile({ name }) {
   if (!me) return;
-  const all = users();
-  all[me.email].name = String(name || "").trim() || all[me.email].name;
-  saveUsers(all);
+  name = String(name || "").trim().slice(0, 80);
+  if (!name) return;
+  me = await backend.updateName(name);
   emit();
 }
 
-export function setPlan(plan) {
-  const me = currentUser();
+export async function setPlan(plan) {
   if (!me) return;
-  const all = users();
-  all[me.email].plan = plan;
-  saveUsers(all);
+  me = await backend.setPlan(plan);
   emit();
 }
 
-export function deleteAccount() {
-  const me = currentUser();
+export async function deleteAccount() {
   if (!me) return;
-  const all = users();
-  delete all[me.email];
-  saveUsers(all);
-  storage.remove(`data.${me.email}`);
-  storage.remove("session");
-  emit();
+  await flush();
+  await backend.deleteAccount();
+  setSession(null);
+  emit({ event: "SIGNED_OUT" });
 }
 
-// ---- user data ----
-const EMPTY = () => ({ reflections: [], savedVerses: [], journey: { completed: [], entries: {}, finishedAt: null }, monthNotes: {} });
+// ---- reading data ----
+export function getData() { return data; }
+export function isVerseSaved(id) { return data.savedVerses.includes(id); }
+export function journeyState() { return data.journey; }
+export function savedLimitReached() { return !isPremium() && data.reflections.length >= CONFIG.freeSavedLimit; }
 
-function dataKey() {
-  const me = currentUser();
-  return me ? `data.${me.email}` : "data.guest";
+export function exportData() {
+  return JSON.stringify({ user: me, data, exportedAt: new Date().toISOString() }, null, 2);
 }
 
-export function getData() {
-  return { ...EMPTY(), ...storage.get(dataKey(), {}) };
-}
-
-function setData(data) {
-  storage.set(dataKey(), data);
-  emit();
-}
-
-function adoptGuestData(email) {
-  const guest = storage.get("data.guest");
-  if (!guest) return;
-  const mine = { ...EMPTY(), ...storage.get(`data.${email}`, {}) };
-  mine.reflections = [...(guest.reflections || []), ...mine.reflections];
-  mine.savedVerses = [...new Set([...(guest.savedVerses || []), ...mine.savedVerses])];
-  storage.set(`data.${email}`, mine);
-  storage.remove("data.guest");
-}
-
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-
-export function savedLimitReached() {
-  return !isPremium() && getData().reflections.length >= CONFIG.freeSavedLimit;
-}
-
+// ---- writing data ----
 // Returns { ok: true, reflection } or { ok: false, reason: "auth" | "limit" }
 export function saveReflection(entry) {
-  if (!currentUser()) return { ok: false, reason: "auth" };
-  const data = getData();
+  if (!me) return { ok: false, reason: "auth" };
   if (entry.id) {
     const i = data.reflections.findIndex(r => r.id === entry.id);
     if (i >= 0) {
       data.reflections[i] = { ...data.reflections[i], ...entry, updatedAt: Date.now() };
-      setData(data);
-      return { ok: true, reflection: data.reflections[i] };
+      const r = data.reflections[i];
+      write(snap => backend.putReflection(r, snap));
+      emit();
+      return { ok: true, reflection: r };
     }
   }
   if (savedLimitReached()) return { ok: false, reason: "limit" };
-  const reflection = { id: uid(), createdAt: Date.now(), ...entry };
+  const reflection = { ...entry, id: uid(), createdAt: Date.now() };
   data.reflections.unshift(reflection);
-  setData(data);
+  write(snap => backend.putReflection(reflection, snap));
+  emit();
   return { ok: true, reflection };
 }
 
 export function deleteReflection(id) {
-  const data = getData();
   data.reflections = data.reflections.filter(r => r.id !== id);
-  setData(data);
+  for (const e of Object.values(data.journey.entries)) if (e.reflectionId === id) e.reflectionId = null;
+  write(snap => backend.removeReflection(id, snap));
+  emit();
 }
-
-export function isVerseSaved(id) { return getData().savedVerses.includes(id); }
 
 export function toggleSavedVerse(id) {
-  if (!currentUser()) return { ok: false, reason: "auth" };
-  const data = getData();
-  const has = data.savedVerses.includes(id);
-  data.savedVerses = has ? data.savedVerses.filter(x => x !== id) : [id, ...data.savedVerses];
-  setData(data);
-  return { ok: true, saved: !has };
+  if (!me) return { ok: false, reason: "auth" };
+  const saved = !data.savedVerses.includes(id);
+  data.savedVerses = saved ? [id, ...data.savedVerses] : data.savedVerses.filter(x => x !== id);
+  write(snap => backend.setSavedVerse(id, saved, snap));
+  emit();
+  return { ok: true, saved };
 }
 
-export function journeyState() { return getData().journey; }
-
 export function saveJourneyEntry(day, entry) {
-  if (!currentUser()) return { ok: false, reason: "auth" };
-  const data = getData();
-  data.journey.entries[day] = { ...(data.journey.entries[day] || {}), ...entry, updatedAt: Date.now() };
-  if (entry.done && !data.journey.completed.includes(day)) data.journey.completed.push(day);
-  if (data.journey.completed.length >= 7 && !data.journey.finishedAt) data.journey.finishedAt = Date.now();
-  setData(data);
+  if (!me) return { ok: false, reason: "auth" };
+  const merged = { ...(data.journey.entries[day] || {}), ...entry, updatedAt: Date.now() };
+  data.journey.entries[day] = merged;
+  if (merged.done && !data.journey.completed.includes(day)) data.journey.completed.push(day);
+  write(snap => backend.putJourneyEntry(day, merged, snap));
+  if (data.journey.completed.length >= 7 && !data.journey.finishedAt) {
+    data.journey.finishedAt = Date.now();
+    const when = data.journey.finishedAt;
+    write(snap => backend.setJourneyFinished(when, snap));
+  }
+  emit();
   return { ok: true };
 }
 
 export function resetJourney() {
-  const data = getData();
   data.journey = EMPTY().journey;
-  setData(data);
+  write(snap => backend.clearJourney(snap));
+  emit();
 }
 
 export function saveMonthNote(monthKey, text) {
-  if (!currentUser()) return;
-  const data = getData();
+  if (!me) return;
   data.monthNotes[monthKey] = text;
-  setData(data);
-}
-
-export function exportData() {
-  return JSON.stringify({ user: currentUser(), data: getData(), exportedAt: new Date().toISOString() }, null, 2);
+  write(snap => backend.putMonthNote(monthKey, text, snap));
 }
 
 // ---- device preferences (not tied to an account) ----
@@ -267,5 +244,10 @@ export function setPref(key, value) {
 }
 
 // ---- pending action: remembered while someone signs up mid-flow ----
-export function setPending(action) { session.set("pending", action); }
-export function takePending() { const p = session.get("pending"); session.remove("pending"); return p; }
+// Kept in localStorage so it survives opening an email-confirmation link in a new tab.
+export function setPending(action) { storage.set("pending", { action, at: Date.now() }); }
+export function takePending() {
+  const p = storage.get("pending");
+  storage.remove("pending");
+  return p && Date.now() - p.at < 86400000 ? p.action : null;
+}

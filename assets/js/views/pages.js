@@ -1,6 +1,9 @@
 import { esc, divider } from "../ui.js";
 import { CONFIG } from "../config.js";
 import { VERSES } from "../data/verses.js";
+import { backendMode } from "../store.js";
+
+const remote = () => backendMode() === "supabase";
 
 const c = CONFIG.crisis;
 
@@ -34,30 +37,39 @@ const PAGES = {
     </ol>
     ${divider()}
     <h2>Accounts</h2>
-    <p>You never need an account to reflect. Creating one lets you save reflections, follow the 7-day journey and see your monthly summary. Accounts are currently stored privately in your browser on this device — so they don't sync between devices yet.</p>
+    <p>You never need an account to reflect. Creating one lets you save reflections, follow the 7-day journey and see your monthly summary. ${remote()
+      ? "Your account works on any device: log in on your phone or laptop and your reflections are there."
+      : "Accounts are currently stored privately in your browser on this device — so they don't sync between devices yet."}</p>
     <h2>When someone may be in danger</h2>
     <p>If what you write suggests you may be at risk of harming yourself, we don't show a verse. Instead we show crisis support, because in that moment a person matters more than a teaching.</p>`,
 
   privacy: () => `
     <p class="eyebrow">Privacy</p>
     <h1>Privacy policy</h1>
-    <p class="lead">Short version: what you write stays on your device.</p>
+    <p class="lead">${remote() ? "Short version: what you type is processed on your device, and only what you choose to save is stored — privately, in your account." : "Short version: what you write stays on your device."}</p>
     <h2>What we store, and where</h2>
     <ul>
+      <li><strong>What you type to find a verse</strong> is matched to a teaching inside your browser. It is not sent to a server unless you choose to save it.</li>
+      ${remote() ? `
+      <li><strong>Your account</strong> (name, email and a securely hashed password) is managed by Supabase Auth, our authentication and database provider.</li>
+      <li><strong>Reflections you save</strong>, saved verses, your 7-day journey and monthly notes are stored in our Supabase database. Database rules (row-level security) mean only you, when logged in, can read or change them.</li>
+      <li>We use your email only for account messages such as confirming your address and resetting your password.</li>` : `
       <li><strong>Your reflections, account details and preferences</strong> are stored in your browser's local storage, on your device. They are not sent to our servers.</li>
-      <li><strong>Passwords</strong> are never stored as text — only a salted PBKDF2 hash, also kept on your device.</li>
-      <li><strong>Drafts in progress</strong> are kept in session storage and disappear when you close the tab.</li>
+      <li><strong>Passwords</strong> are never stored as text — only a salted PBKDF2 hash, also kept on your device.</li>`}
+      <li><strong>Drafts in progress</strong> are kept in your browser's session storage and disappear when you close the tab.</li>
     </ul>
     <h2>What we don't do</h2>
     <ul>
-      <li>We don't send what you type to any AI service or server.</li>
+      <li>We don't send what you type to any AI service.</li>
       <li>We don't sell data or show advertising.</li>
       <li>We don't use analytics or tracking cookies.</li>
     </ul>
     <h2>Third parties</h2>
-    <p>Fonts are loaded from Google Fonts, which receives your IP address as part of a normal web request. If you look up a verse outside our curated library, the complete text is fetched from a public dataset hosted on GitHub Pages. When you choose to share to WhatsApp, that service's own policy applies. If paid plans are introduced, payments will be handled by a payment provider under its own policy.</p>
+    <p>Fonts are loaded from Google Fonts, which receives your IP address as part of a normal web request. If you look up a verse outside our curated library, the complete text is fetched from a public dataset hosted on GitHub Pages. ${remote() ? "Saved reflections and account details are processed by Supabase (supabase.com) on our behalf. " : ""}When you choose to share to WhatsApp, that service's own policy applies. If paid plans are introduced, payments will be handled by a payment provider under its own policy.</p>
     <h2>Your control</h2>
-    <p>From your Profile you can download all your data or delete your account, which removes your reflections from this device. Clearing your browser's site data also removes everything.</p>
+    <p>${remote()
+      ? "From your Profile you can download all your data, or delete your account — which permanently deletes your account and every reflection from our database."
+      : "From your Profile you can download all your data or delete your account, which removes your reflections from this device. Clearing your browser's site data also removes everything."}</p>
     <p class="fine">Last updated: ${new Date(2026, 9, 5).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}.</p>`,
 
   terms: () => `
@@ -68,7 +80,9 @@ const PAGES = {
     <h2>Interpretations</h2>
     <p>Interpretive content (simple meanings, explanations, questions and practices) reflects one gentle reading of the text and may differ from traditional commentaries. It is offered humbly and without any claim of religious authority.</p>
     <h2>Your account</h2>
-    <p>Accounts are stored in your browser. You are responsible for keeping your device secure. Because data lives on your device, clearing browser data or losing the device will remove it; please download a copy from your Profile if it matters to you.</p>
+    <p>${remote()
+      ? "Please keep your password private. You can download or delete your data at any time from your Profile."
+      : "Accounts are stored in your browser. You are responsible for keeping your device secure. Because data lives on your device, clearing browser data or losing the device will remove it; please download a copy from your Profile if it matters to you."}</p>
     <h2>Paid features</h2>
     <p>The core experience is free. Optional paid plans and digital products, when available, will be described clearly before purchase. Digital products are delivered as downloads.</p>
     <h2>Sharing</h2>

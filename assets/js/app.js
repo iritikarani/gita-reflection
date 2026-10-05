@@ -1,6 +1,6 @@
 // Gita Reflection — app shell and router.
 import * as store from "./store.js";
-import { esc, toast } from "./ui.js";
+import { esc, toast, closeAllModals } from "./ui.js";
 import { startAmbience, stopAmbience } from "./sound.js";
 import { runPending } from "./components.js";
 
@@ -18,6 +18,7 @@ const ROUTES = [
   { path: "signup", view: "auth", nav: "", title: "Create an account", mode: "signup" },
   { path: "login", view: "auth", nav: "", title: "Log in", mode: "login" },
   { path: "forgot", view: "auth", nav: "", title: "Reset your password", mode: "forgot" },
+  { path: "reset", view: "auth", nav: "", title: "Choose a new password", mode: "reset" },
   { path: "profile", view: "profile", nav: "", title: "Profile" },
   { path: "premium", view: "premium", nav: "", title: "Premium", mode: "premium" },
   { path: "shop", view: "premium", nav: "", title: "Journals & resources", mode: "shop" },
@@ -67,6 +68,7 @@ async function render() {
     if (active) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
   closeProfileMenu();
+  closeAllModals();
 
   if (!route) {
     main.innerHTML = `<section class="wrap narrow page-pad center"><h1 tabindex="-1">This page has drifted away</h1><p class="lead">The link may be old or mistyped.</p><a class="btn btn-primary" href="#/">Return home</a></section>`;
@@ -145,9 +147,10 @@ profileBtn.addEventListener("click", e => {
 });
 profilePop.addEventListener("click", e => {
   if (e.target.closest("[data-logout]")) {
-    store.logOut();
-    toast("You've logged out. Come back whenever you need a quiet moment.");
-    navigate("/");
+    store.logOut().then(() => {
+      toast("You've logged out. Come back whenever you need a quiet moment.");
+      navigate("/");
+    });
   }
   if (e.target.closest("a, button")) closeProfileMenu();
 });
@@ -181,7 +184,6 @@ function applyTheme() {
   if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#F6F0E4";
 }
 
-store.subscribe(() => { renderProfileMenu(); applyTheme(); });
 
 // Exposed for auth views to resume what the visitor was doing.
 export function afterAuth(next) {
@@ -190,10 +192,46 @@ export function afterAuth(next) {
 }
 
 document.getElementById("year").textContent = new Date().getFullYear();
-renderProfileMenu();
-applyTheme();
-window.addEventListener("hashchange", render);
-render();
+store.onError(message => toast(message));
+
+// Links from account emails arrive as "#access_token=…&type=recovery" (or an error).
+// Read them before the auth client consumes and clears the URL.
+function readEmailLink() {
+  const h = location.hash.slice(1);
+  if (!/(^|&)(access_token|error_description|error_code)=/.test(h)) return null;
+  return Object.fromEntries(new URLSearchParams(h));
+}
+
+async function start() {
+  const link = readEmailLink();
+  await store.init();
+  renderProfileMenu();
+  applyTheme();
+  store.subscribe(({ event } = {}) => {
+    renderProfileMenu();
+    applyTheme();
+    if (event === "PASSWORD_RECOVERY" && location.hash !== "#/reset") navigate("/reset");
+    // Signed out elsewhere (another tab, expired session): leave account-only pages.
+    if (event === "SIGNED_OUT" && /^#\/(profile|summary)/.test(location.hash)) navigate("/");
+  });
+  window.addEventListener("hashchange", render);
+
+  if (link?.error_description || link?.error_code) {
+    history.replaceState(null, "", location.pathname + location.search + "#/");
+    toast("That link has expired or was already used. Please try again.");
+    render();
+  } else if (link?.type === "recovery" && store.currentUser()) {
+    navigate("/reset");
+  } else if (link && store.currentUser()) {
+    const saved = runPending({ quiet: true });
+    toast(saved ? "Your email is confirmed, and your reflection is saved." : "Your email is confirmed. Welcome to Gita Reflection.");
+    navigate("/journey");
+  } else {
+    render();
+  }
+}
+
+start();
 
 // Warm the cache for the most-used views once the page is idle.
 const idle = window.requestIdleCallback || (fn => setTimeout(fn, 1500));

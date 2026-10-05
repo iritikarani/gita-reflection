@@ -88,7 +88,7 @@ export function render(root) {
   ta.addEventListener("input", () => session.set(key, ta.value));
   bindSaveVerse(root);
 
-  root.addEventListener("click", e => {
+  root.querySelector(".daily").addEventListener("click", e => {
     const btn = e.target.closest("[data-act]");
     if (!btn) return;
     const act = btn.dataset.act;

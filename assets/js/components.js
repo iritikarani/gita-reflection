@@ -77,7 +77,7 @@ export function askToJoin({ reason = "save", pending } = {}) {
         <a class="btn btn-primary btn-block" href="#/signup?next=${next}">Create a free account</a>
         <a class="btn btn-ghost btn-block" href="#/login?next=${next}">I already have an account</a>
       </div>
-      <p class="fine center">Free forever for the essentials. Your reflections stay private on this device.</p>`,
+      <p class="fine center">Free forever for the essentials. Your reflections stay private${store.backendMode() === "supabase" ? " to your account" : " on this device"}.</p>`,
     onOpen: (el, close) => el.querySelectorAll("a").forEach(a => a.addEventListener("click", close))
   });
 }
@@ -106,18 +106,21 @@ export function saveWithPrompt(entry) {
 }
 
 // Run an action remembered before sign-up / login.
-export function runPending() {
+export function runPending({ quiet = false } = {}) {
   const p = store.takePending();
-  if (!p) return;
+  if (!p) return false;
   if (p.type === "saveReflection") {
     const res = store.saveReflection(p.entry);
-    if (res.ok) toast("Your reflection is saved.");
+    if (res.ok && !quiet) toast("Your reflection is saved.");
     else if (res.reason === "limit") limitReached();
+    return res.ok;
   }
   if (p.type === "saveVerse") {
     if (!store.isVerseSaved(p.id)) store.toggleSavedVerse(p.id);
-    toast("Verse saved to your journey.");
+    if (!quiet) toast("Verse saved to your journey.");
+    return true;
   }
+  return false;
 }
 
 export function saveVerseButton(verseId) {

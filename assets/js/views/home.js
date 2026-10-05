@@ -39,7 +39,7 @@ export function render(root, { navigate }) {
           <span>Find a moment of wisdom</span>${icon("arrow")}
         </button>
       </form>
-      <p id="ask-hint" class="hint rise" style="--d:3">English, हिन्दी or Hinglish — write it however it comes. What you type stays on your device.</p>
+      <p id="ask-hint" class="hint rise" style="--d:3">English, हिन्दी or Hinglish — write it however it comes. Nothing you type is sent anywhere unless you choose to save it.</p>
 
       <div id="feelings" class="feelings rise" style="--d:4">
         <p class="feelings-label">Or choose what feels closest</p>
