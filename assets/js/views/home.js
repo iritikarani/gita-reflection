@@ -6,6 +6,7 @@ import { buildReflection, dailyVerse } from "../matcher.js";
 import { crisisBlock } from "../components.js";
 import { session, currentUser } from "../store.js";
 import { t, pick, isHindi } from "../i18n.js";
+import { CONFIG } from "../config.js";
 
 const PLACEHOLDERS = {
   en: [
@@ -155,6 +156,7 @@ export function render(root, { navigate }) {
           <p class="card-mock-ref">${t("Bhagavad Gita")} 2.47</p>
           <p class="card-mock-q">${esc(pick(VERSE_BY_ID["2.47"], "question"))}</p>
           <p class="card-mock-brand">${t("Gita Reflection")}</p>
+          <p class="card-mock-host">${esc((CONFIG.siteUrl || "").replace(/^https?:\/\//, ""))}</p>
         </figure>
       </div>
     </div>

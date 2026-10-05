@@ -80,13 +80,22 @@ export async function createSupabaseBackend({ url, anonKey }, { onAuthEvent } = 
 
   async function loadUser(sessionUser) {
     const id = sessionUser.id;
-    const [profile, reflections, saved, journey, notes] = await Promise.all([
+    const [profile, reflections, saved, journey, notes, programRows, collectionRows] = await Promise.all([
       check(db.from("profiles").select("name, plan, journey_finished_at, created_at").eq("id", id).maybeSingle()),
       check(db.from("reflections").select("*").order("created_at", { ascending: false })),
       check(db.from("saved_verses").select("verse_id, created_at").order("created_at", { ascending: false })),
       check(db.from("journey_entries").select("*")),
-      check(db.from("month_notes").select("month, body"))
+      check(db.from("month_notes").select("month, body")),
+      // Premium tables: tolerate their absence if schema.sql hasn't been re-run yet.
+      db.from("program_entries").select("*").then(r => r.data || []),
+      db.from("collections").select("*").order("created_at", { ascending: false }).then(r => r.data || [])
     ]);
+    const programs = {};
+    for (const row of programRows) {
+      const p = programs[row.program] ||= { completed: [], entries: {} };
+      p.entries[row.day] = { text: row.body || "", done: row.done, updatedAt: ts(row.updated_at) };
+      if (row.done) p.completed.push(row.day);
+    }
     me = {
       id, email: sessionUser.email,
       name: profile?.name || sessionUser.user_metadata?.name || sessionUser.email.split("@")[0],
@@ -105,7 +114,9 @@ export async function createSupabaseBackend({ url, anonKey }, { onAuthEvent } = 
         reflections: reflections.map(rowToReflection),
         savedVerses: saved.map(s => s.verse_id),
         journey: { completed: completed.sort((a, b) => a - b), entries, finishedAt: ts(profile?.journey_finished_at) },
-        monthNotes: Object.fromEntries(notes.map(n => [n.month, n.body || ""]))
+        monthNotes: Object.fromEntries(notes.map(n => [n.month, n.body || ""])),
+        programs,
+        collections: collectionRows.map(c => ({ id: c.id, name: c.name, verseIds: c.verse_ids || [], createdAt: ts(c.created_at) }))
       }
     };
   }
@@ -206,6 +217,17 @@ export async function createSupabaseBackend({ url, anonKey }, { onAuthEvent } = 
     },
     async setJourneyFinished(when) {
       await check(db.from("profiles").update({ journey_finished_at: iso(when) }).eq("id", userId()));
+    },
+    async putProgramEntry(programId, day, entry) {
+      await check(db.from("program_entries").upsert({
+        user_id: userId(), program: programId, day, body: entry.text || "", done: Boolean(entry.done), updated_at: new Date().toISOString()
+      }, { onConflict: "user_id,program,day" }));
+    },
+    async putCollection(col) {
+      await check(db.from("collections").upsert({ id: col.id, user_id: userId(), name: col.name, verse_ids: col.verseIds, created_at: iso(col.createdAt) }));
+    },
+    async removeCollection(id) {
+      await check(db.from("collections").delete().eq("id", id));
     },
     async putMonthNote(month, text) {
       await check(db.from("month_notes").upsert({ user_id: userId(), month, body: text, updated_at: new Date().toISOString() }, { onConflict: "user_id,month" }));

@@ -31,7 +31,7 @@ function guestView(root) {
 function entryHtml(r) {
   const v = VERSE_BY_ID[r.verseId];
   const emotion = r.emotion && EMOTIONS[r.emotion] && r.emotion !== "general" ? pick(EMOTIONS[r.emotion], "label") : null;
-  const sourceLabel = t({ daily: "Daily Gita", journey: "7-day journey", conversation: "Reflect", library: "Library" }[r.source] || "");
+  const sourceLabel = t({ daily: "Daily Gita", journey: "7-day journey", conversation: "Reflect", library: "Library", journal: "Private journal", program: "Guided programs" }[r.source] || "");
   return `
     <article class="entry" data-id="${esc(r.id)}">
       <div class="entry-top">
@@ -99,6 +99,15 @@ export function render(root, { query }) {
             <p class="eyebrow">${t("Your month in reflection")}</p>
             <p>${esc(monthLabel(monthKey(Date.now())))}: ${tn(thisMonth, "{n} reflection so far.", "{n} reflections so far.")}</p>
             <a class="btn btn-ghost btn-sm" href="#/summary">${t("Open monthly summary")}</a>
+          </div>
+          <div class="side-card">
+            <p class="eyebrow">${t("Go deeper")}</p>
+            <nav class="side-links" aria-label="${t("Go deeper")}">
+              <a href="#/programs">${t("Guided programs")}</a>
+              <a href="#/journal">${t("Private journal")}</a>
+              <a href="#/collections">${t("Your collections")}</a>
+              <a href="#/templates">${t("Journal templates")}</a>
+            </nav>
           </div>
           ${me.plan !== "premium" ? `<div class="side-card subtle">
             <p class="fine">${t("{n} of {limit} free reflections saved.", { n: all.length, limit: CONFIG.freeSavedLimit })} ${t("{link} keeps unlimited history.", { link: `<a href="#/premium">${t("Premium")}</a>` })}</p>

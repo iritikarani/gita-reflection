@@ -2,11 +2,23 @@ import { esc, icon, autoGrow, divider, toast } from "../ui.js";
 import { VERSE_BY_ID } from "../data/verses.js";
 import { EMOTIONS } from "../data/emotions.js";
 import { buildReflection, localizeReflection } from "../matcher.js";
-import { t, pick } from "../i18n.js";
+import { t, pick, isHindi } from "../i18n.js";
+import { DEEPER_PROMPTS } from "../data/programs.js";
+import { isPremium } from "../store.js";
 import { verseBlock, saveWithPrompt, emptyState } from "../components.js";
 import { session, currentUser } from "../store.js";
 import { openShare } from "../share.js";
 import { openBreathe } from "./breathe.js";
+
+// Premium: three more questions for going deeper. Free visitors see a quiet teaser.
+function deeperPrompts(cur) {
+  if (!isPremium()) {
+    return `<div class="deeper deeper-locked"><p class="section-label">${t("Go deeper")}</p><p class="muted">${t("Premium adds three more questions to every reflection, for when one isn't enough.")} <a href="#/premium">${t("See Premium")}</a></p></div>`;
+  }
+  const seed = [...(cur.verseId + cur.emotion)].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const picks = [0, 1, 2].map(i => DEEPER_PROMPTS[(seed + i * 2) % DEEPER_PROMPTS.length][isHindi() ? 1 : 0]);
+  return `<div class="deeper"><p class="section-label">${t("Go deeper")}</p><ol>${picks.map(q => `<li>${esc(q)}</li>`).join("")}</ol></div>`;
+}
 
 export function render(root, { navigate, query }) {
   // Deep link from a guide page: #/reflection?e=overthinking
@@ -71,6 +83,7 @@ export function render(root, { navigate, query }) {
         <button class="btn btn-ghost" type="button" data-act="another">${icon("refresh")}<span>${t("Read another")}</span></button>
         <button class="btn btn-ghost" type="button" data-act="breathe">${icon("breath")}<span>${t("Start a 2-minute reflection")}</span></button>
       </div>
+      ${deeperPrompts(current)}
       <p class="save-note fine" aria-live="polite">${current.savedId ? t("Saved to {link}.", { link: `<a href="#/journey">${t("your journey")}</a>` }) : currentUser() ? "" : t("No account needed to reflect. Create one only if you'd like to save.")}</p>
     </section>
 

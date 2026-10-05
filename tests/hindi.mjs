@@ -59,7 +59,8 @@ async function step(name, fn) {
 
 const ROUTES = ["#/", "#/reflection?e=heavy", "#/daily", "#/reflect", "#/library", "#/library?c=fear", "#/shlok/2-47",
   "#/journey", "#/summary", "#/seven-days", "#/seven-days/3", "#/signup", "#/login", "#/forgot", "#/premium", "#/shop",
-  "#/about", "#/how-it-works", "#/privacy", "#/terms", "#/contact", "#/nope"];
+  "#/about", "#/how-it-works", "#/privacy", "#/terms", "#/contact", "#/refunds", "#/programs", "#/programs/30-inner-peace",
+  "#/programs/14-steadiness/1", "#/templates", "#/templates/gratitude", "#/journal", "#/collections", "#/nope"];
 
 // ---------- 1. Every page in Hindi ----------
 for (const vp of [{ name: "phone", width: 360, height: 780 }, { name: "desktop", width: 1366, height: 900 }]) {

@@ -277,6 +277,45 @@ await step("plan cannot be changed from the browser", async () => {
   assert(res === 403 && mock.profileFor(EMAIL).plan === "free", `plan escalation status ${res}`);
 });
 
+await step("Premium programs and collections sync across devices", async () => {
+  mock.profileFor(EMAIL).plan = "premium";
+  await page.goto(BASE + "#/");
+  await page.reload();
+  await page.waitForSelector("main h1");
+  await page.goto(BASE + "#/programs/14-steadiness/5");
+  await page.fill("#program-text", "Naming the feeling helped.");
+  await page.click('[data-act="complete"]');
+  await until(() => mock.rowsFor("program_entries", EMAIL).some(r => r.program === "14-steadiness" && r.day === 5 && r.done), "program entry not stored");
+  await page.goto(BASE + "#/shlok/2-70");
+  await page.click('[data-act="collect"]');
+  await page.fill("#col-name", "Ocean");
+  await page.click(".col-new button");
+  await until(() => mock.rowsFor("collections", EMAIL).some(c => c.name === "Ocean" && c.verse_ids.includes("2.70")), "collection not stored");
+  await page.keyboard.press("Escape");
+  const other = await newPage();
+  await other.page.goto(BASE + "#/login");
+  await other.page.fill("#email", EMAIL);
+  await other.page.fill("#password", "brand-new-calm-9");
+  await other.page.click('#auth-form button[type="submit"]');
+  await other.page.waitForURL(/#\/journey/);
+  await other.page.goto(BASE + "#/collections");
+  await waitText(other.page, ".col-cards", /Ocean/);
+  await other.page.goto(BASE + "#/programs/14-steadiness");
+  await other.page.waitForSelector(".day-row.done", { timeout: 8000 });
+  await other.context.close();
+});
+
+await step("free members can't write Premium rows, even directly", async () => {
+  mock.profileFor(EMAIL).plan = "free";
+  const status = await page.evaluate(async ({ url, key }) => {
+    const raw = Object.entries(localStorage).find(([k]) => k.startsWith("sb-") && k.endsWith("-auth-token"))?.[1];
+    const token = JSON.parse(raw).access_token;
+    const r = await fetch(`${url}/rest/v1/collections`, { method: "POST", headers: { apikey: key, Authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ name: "Sneaky", verse_ids: [] }) });
+    return r.status;
+  }, { url: mock.url, key: mock.anonKey });
+  if (status === 201) throw new Error("free member wrote a collection");
+});
+
 await step("delete account removes everything", async () => {
   await page.goto(BASE + "#/profile");
   await page.click(".settings [data-delete]");

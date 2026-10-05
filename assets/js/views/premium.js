@@ -78,6 +78,15 @@ function premiumView(root) {
       </div>
     </section>
 
+    <section class="wrap narrow">
+      <h2 class="section-label center">${t("See what's included")}</h2>
+      <div class="feature-links">
+        <a href="#/programs"><strong>${t("Guided programs")}</strong><span>${t("14 and 30-day journeys")}</span></a>
+        <a href="#/journal"><strong>${t("Private journal")}</strong><span>${t("A private digital journal")}</span></a>
+        <a href="#/collections"><strong>${t("Your collections")}</strong><span>${t("Personal shlok collections")}</span></a>
+        <a href="#/templates"><strong>${t("Journal templates")}</strong><span>${t("Premium journal templates")}</span></a>
+      </div>
+    </section>
     <section class="wrap narrow center">
       <p class="statement small">${t("Premium never gates peace. It simply offers more room to go deeper.")}</p>
       <a class="btn btn-link" href="#/shop">${t("Journals & one-time resources")} ${icon("arrow")}</a>

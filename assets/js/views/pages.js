@@ -90,6 +90,27 @@ const PAGES = {
     <h2>Sharing</h2>
     <p>You're welcome to share cards and verses for personal, non-commercial purposes.</p>`,
 
+  refunds: () => `
+    <p class="eyebrow">Refunds &amp; cancellations</p>
+    <h1>Refunds and cancellations</h1>
+    <p class="lead">We want paying for Gita Reflection to feel as calm as using it.</p>
+    <h2>Premium membership</h2>
+    <ul>
+      <li>You can cancel Premium at any time. You keep Premium until the end of the period you've already paid for, and you won't be charged again.</li>
+      <li>If you were charged by mistake, or forgot to cancel before a renewal, write to us within 7 days of the charge and we'll refund it in full.</li>
+      <li>Your reflections are always yours. If Premium ends, nothing you've written is deleted; you can still read and download it.</li>
+    </ul>
+    <h2>Digital journals and resources</h2>
+    <ul>
+      <li>These are delivered instantly as downloads, so we don't usually offer refunds once a file has been downloaded.</li>
+      <li>If a file doesn't arrive, won't open, or isn't what was described, contact us within 7 days and we'll send a working copy or refund you in full.</li>
+    </ul>
+    <h2>How refunds are paid</h2>
+    <p>Approved refunds go back to the original payment method, usually within 5–7 working days, depending on your bank.</p>
+    <h2>Contact</h2>
+    <p>${CONFIG.contactEmail ? `Write to <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a> with your payment receipt.` : `Reach us through the <a href="#/contact">Contact</a> page with your payment receipt.`}</p>
+    <p class="fine">Last updated: ${updated()}.</p>`,
+
   contact: () => `
     <p class="eyebrow">Contact</p>
     <h1>Say hello</h1>
@@ -185,6 +206,28 @@ const PAGES_HI = {
     <p>मुख्य अनुभव मुफ़्त है। वैकल्पिक भुगतान वाले प्लान और डिजिटल उत्पाद, जब उपलब्ध होंगे, ख़रीदने से पहले साफ़-साफ़ बताए जाएँगे। डिजिटल उत्पाद डाउनलोड के रूप में दिए जाते हैं।</p>
     <h2>साझा करना</h2>
     <p>आप कार्ड और श्लोक व्यक्तिगत, ग़ैर-व्यावसायिक उद्देश्यों के लिए साझा कर सकते हैं।</p>
+    <p class="fine">यह हिन्दी अनुवाद सुविधा के लिए है; किसी अंतर की स्थिति में अंग्रेज़ी संस्करण मान्य होगा।</p>`,
+
+  refunds: () => `
+    <p class="eyebrow">रिफ़ंड और रद्दीकरण</p>
+    <h1>रिफ़ंड और रद्दीकरण</h1>
+    <p class="lead">हम चाहते हैं कि गीता रिफ्लेक्शन के लिए भुगतान करना भी उतना ही शांत हो जितना इसका उपयोग।</p>
+    <h2>प्रीमियम सदस्यता</h2>
+    <ul>
+      <li>आप प्रीमियम कभी भी रद्द कर सकते हैं। जिस अवधि का भुगतान हो चुका है, उसके अंत तक प्रीमियम रहेगा, और आगे कोई शुल्क नहीं लगेगा।</li>
+      <li>अगर ग़लती से शुल्क कट गया, या नवीनीकरण से पहले रद्द करना भूल गए, तो शुल्क के 7 दिनों के भीतर हमें लिखिए — हम पूरा पैसा लौटा देंगे।</li>
+      <li>आपके चिंतन हमेशा आपके हैं। प्रीमियम ख़त्म होने पर भी आपका लिखा कुछ नहीं मिटता; आप उसे पढ़ और डाउनलोड कर सकते हैं।</li>
+    </ul>
+    <h2>डिजिटल डायरियाँ और संसाधन</h2>
+    <ul>
+      <li>ये तुरंत डाउनलोड के रूप में मिलते हैं, इसलिए फ़ाइल डाउनलोड होने के बाद आमतौर पर रिफ़ंड नहीं दिया जाता।</li>
+      <li>अगर फ़ाइल नहीं मिली, खुल नहीं रही, या बताए अनुसार नहीं है, तो 7 दिनों के भीतर संपर्क करें — हम सही प्रति भेजेंगे या पूरा पैसा लौटाएँगे।</li>
+    </ul>
+    <h2>रिफ़ंड कैसे मिलता है</h2>
+    <p>स्वीकृत रिफ़ंड उसी भुगतान माध्यम में लौटता है, आमतौर पर 5–7 कार्य दिवसों में, आपके बैंक के अनुसार।</p>
+    <h2>संपर्क</h2>
+    <p>${CONFIG.contactEmail ? `अपनी भुगतान रसीद के साथ <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a> पर लिखिए।` : `अपनी भुगतान रसीद के साथ <a href="#/contact">संपर्क</a> पन्ने के माध्यम से हमसे जुड़िए।`}</p>
+    <p class="fine">अंतिम अपडेट: ${updated()}।</p>
     <p class="fine">यह हिन्दी अनुवाद सुविधा के लिए है; किसी अंतर की स्थिति में अंग्रेज़ी संस्करण मान्य होगा।</p>`,
 
   contact: () => `

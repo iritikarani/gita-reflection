@@ -347,6 +347,7 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .card-mock-ref { font-size: .78rem; color: #8A6B33; margin: 0; }
 .card-mock-q { font-family: var(--serif); font-style: italic; color: #6E5D4E; font-size: 1.02rem; margin: 6px 0 0; }
 .card-mock-brand { font-family: var(--serif); font-weight: 600; margin: 8px 0 0; letter-spacing: .05em; }
+.card-mock-host { font-size: .72rem; color: #8A6B33; margin: 0; }
 
 /* ---------- Verse ---------- */
 .verse { margin: 0 auto; }
@@ -776,3 +777,50 @@ body.modal-open { overflow: hidden; }
 /* Journals and inputs: Devanagari, English or Hinglish all render comfortably */
 .journal, .ask textarea, .composer textarea, .search input, .field input { font-feature-settings: normal; }
 .journal:lang(hi), :root[lang="hi"] .journal, :root[lang="hi"] .ask textarea { line-height: 1.8; }
+
+/* ---------- Premium: programs, collections, journal, templates ---------- */
+.wrap-dots { flex-wrap: wrap; max-width: 420px; margin-left: auto; margin-right: auto; }
+.col-cards { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.col-card { display: grid; gap: 4px; text-decoration: none; color: var(--ink); }
+.col-card:hover { border-color: var(--gold); color: var(--ink); }
+.col-card strong { font-family: var(--serif); font-size: 1.4rem; font-weight: 500; }
+.col-item { display: grid; gap: 4px; }
+.col-item .btn-link { justify-self: end; }
+.col-list { display: grid; gap: 6px; margin-bottom: 16px; }
+.col-row { display: grid; grid-template-columns: 22px 1fr auto; gap: 12px; align-items: center; min-height: 44px; padding: 6px 10px; border-radius: 12px; border: 1px solid var(--line); cursor: pointer; }
+.col-row input { width: 20px; height: 20px; accent-color: var(--primary); }
+.narrow-form { max-width: 480px; margin: 20px auto 0; }
+.prompt-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.prompt-row .question { margin-bottom: .4em; }
+.deeper { margin-top: 26px; }
+.deeper ol { padding-left: 1.2em; display: grid; gap: 10px; }
+.deeper li { font-family: var(--serif); font-size: 1.2rem; line-height: 1.45; color: var(--ink-2); }
+.deeper-locked { border: 1px dashed var(--line-strong); border-radius: var(--radius-lg); padding: 18px 20px; }
+.feature-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; margin: 10px 0 30px; }
+.feature-links a { display: grid; gap: 4px; padding: 18px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); text-decoration: none; color: var(--ink); }
+.feature-links a:hover { border-color: var(--gold); color: var(--ink); }
+.feature-links strong { font-family: var(--serif); font-size: 1.2rem; font-weight: 500; }
+.feature-links span { font-size: .88rem; color: var(--muted); }
+.tpl-page { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 32px clamp(18px, 5vw, 40px); margin-bottom: 60px; }
+.tpl-preview { position: relative; max-height: 560px; overflow: hidden; }
+.tpl-preview::after { content: ""; position: absolute; inset: auto 0 0 0; height: 160px; background: linear-gradient(transparent, var(--surface)); }
+.tpl-head { text-align: center; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 8px; }
+.tpl-brand { font-size: .76rem; letter-spacing: .16em; text-transform: uppercase; color: var(--sage-ink); margin-bottom: 6px; }
+.tpl-head h2 { margin-bottom: 10px; }
+.tpl-verse { font-size: .95rem; color: var(--muted); margin: 0; }
+.tpl-section h3 { font-family: var(--sans); font-size: .95rem; font-weight: 500; color: var(--ink-2); margin: 22px 0 6px; }
+.tpl-lines { display: grid; }
+.tpl-lines span { display: block; height: 34px; border-bottom: 1px solid var(--line-strong); }
+.tpl-foot { text-align: center; font-size: .8rem; color: var(--muted); margin: 26px 0 0; }
+:root[lang="hi"] .tpl-brand { letter-spacing: 0; text-transform: none; }
+@media print {
+  .template-view .tpl-page { border: none; padding: 0; margin: 0; max-height: none; overflow: visible; }
+  .tpl-preview::after { display: none; }
+  .tpl-lines span { height: 30px; border-bottom-color: #bbb; }
+  .program-page, .programs { display: none; }
+}
+.side-links { display: grid; gap: 2px; }
+.side-links a { padding: 8px 0; text-decoration: none; color: var(--ink-2); }
+.side-links a:hover { color: var(--ink); text-decoration: underline; }
+/* Headings receive focus after navigation so screen readers announce the page; no visible ring needed. */
+main h1[tabindex="-1"]:focus, main h1[tabindex="-1"]:focus-visible { outline: none; }

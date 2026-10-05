@@ -16,6 +16,14 @@ const ROUTES = [
   { path: "summary", view: "summary", nav: "journey", title: "Your month in reflection" },
   { path: "seven-days", view: "seven", nav: "journey", title: "7 Days with the Gita" },
   { path: "seven-days/:day", view: "seven", nav: "journey", title: "7 Days with the Gita" },
+  { path: "programs", view: "programs", nav: "journey", title: "Guided programs" },
+  { path: "programs/:id", view: "programs", nav: "journey", title: "Guided programs" },
+  { path: "programs/:id/:day", view: "programs", nav: "journey", title: "Guided programs" },
+  { path: "collections", view: "collections", nav: "journey", title: "Your collections" },
+  { path: "collections/:id", view: "collections", nav: "journey", title: "Your collections" },
+  { path: "journal", view: "journal", nav: "journey", title: "Private journal" },
+  { path: "templates", view: "templates", nav: "journey", title: "Journal templates" },
+  { path: "templates/:id", view: "templates", nav: "journey", title: "Journal templates" },
   { path: "signup", view: "auth", nav: "", title: "Create an account", mode: "signup" },
   { path: "login", view: "auth", nav: "", title: "Log in", mode: "login" },
   { path: "forgot", view: "auth", nav: "", title: "Reset your password", mode: "forgot" },
@@ -27,7 +35,8 @@ const ROUTES = [
   { path: "how-it-works", view: "pages", nav: "", title: "How it works", mode: "how" },
   { path: "privacy", view: "pages", nav: "", title: "Privacy", mode: "privacy" },
   { path: "terms", view: "pages", nav: "", title: "Terms", mode: "terms" },
-  { path: "contact", view: "pages", nav: "", title: "Contact", mode: "contact" }
+  { path: "contact", view: "pages", nav: "", title: "Contact", mode: "contact" },
+  { path: "refunds", view: "pages", nav: "", title: "Refunds & cancellations", mode: "refunds" }
 ];
 
 const viewCache = {};
@@ -123,6 +132,8 @@ function renderProfileMenu() {
     ? `<p class="pop-head"><strong>${esc(me.name)}</strong><span>${esc(me.email)}</span></p>
        <a href="#/journey">${t("My Journey")}</a>
        <a href="#/seven-days">${t("7-Day Journey")}</a>
+       <a href="#/programs">${t("Guided programs")}</a>
+       ${me.plan === "premium" ? `<a href="#/journal">${t("Private journal")}</a><a href="#/collections">${t("Your collections")}</a>` : ""}
        <a href="#/summary">${t("Monthly summary")}</a>
        <a href="#/profile">${t("Profile & settings")}</a>
        ${me.plan === "premium" ? "" : `<a href="#/premium">${t("Go deeper with Premium")}</a>`}

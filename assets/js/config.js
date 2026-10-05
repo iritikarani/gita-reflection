@@ -1,6 +1,8 @@
 // Site-wide settings. Edit these before launch.
 export const CONFIG = {
   siteName: "Gita Reflection",
+  // The public address shown on share cards and in shared links.
+  siteUrl: "https://gita-reflection.vercel.app",
   tagline: "A calm place to pause, reflect, and find perspective through the wisdom of the Bhagavad Gita.",
 
   // Accounts & saved reflections. Leave empty to keep accounts in each visitor's

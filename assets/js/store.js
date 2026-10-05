@@ -10,7 +10,7 @@ import { createLocalBackend } from "./backends/local.js";
 
 export { session };
 
-const EMPTY = () => ({ reflections: [], savedVerses: [], journey: { completed: [], entries: {}, finishedAt: null }, monthNotes: {} });
+const EMPTY = () => ({ reflections: [], savedVerses: [], journey: { completed: [], entries: {}, finishedAt: null }, monthNotes: {}, programs: {}, collections: [] });
 
 let backend = createLocalBackend();
 let me = null;
@@ -105,7 +105,9 @@ function write(fn) {
     const msg = String(e?.message || "");
     errorHandler(/free_limit_reached/.test(msg)
       ? "Your free journal is full, so that reflection couldn't be saved."
-      : "We couldn't save that just now. Please check your connection and try again.");
+      : /premium_required/.test(msg)
+        ? "That's part of Premium, so it couldn't be saved."
+        : "We couldn't save that just now. Please check your connection and try again.");
   });
   return queue;
 }
@@ -266,6 +268,60 @@ export function saveMonthNote(monthKey, text) {
   if (!me) return;
   data.monthNotes[monthKey] = text;
   write(snap => backend.putMonthNote(monthKey, text, snap));
+}
+
+// ---- Premium: guided programs ----
+export function programState(id) {
+  return data.programs[id] || { completed: [], entries: {} };
+}
+
+export function saveProgramEntry(programId, day, entry) {
+  if (!me) return { ok: false, reason: "auth" };
+  const state = { completed: [], entries: {}, ...(data.programs[programId] || {}) };
+  const merged = { ...(state.entries[day] || {}), ...entry, updatedAt: Date.now() };
+  state.entries = { ...state.entries, [day]: merged };
+  if (merged.done && !state.completed.includes(day)) state.completed = [...state.completed, day];
+  data.programs[programId] = state;
+  write(snap => backend.putProgramEntry(programId, day, merged, snap));
+  emit();
+  return { ok: true };
+}
+
+// ---- Premium: personal shlok collections ----
+export function collections() { return data.collections; }
+
+export function createCollection(name) {
+  if (!me) return null;
+  const col = { id: uid(), name: String(name || "").trim().slice(0, 60) || "My collection", verseIds: [], createdAt: Date.now() };
+  data.collections = [col, ...data.collections];
+  write(snap => backend.putCollection(col, snap));
+  emit();
+  return col;
+}
+
+export function updateCollection(id, changes) {
+  const i = data.collections.findIndex(c => c.id === id);
+  if (i < 0) return null;
+  const col = { ...data.collections[i], ...changes };
+  if (changes.name !== undefined) col.name = String(changes.name).trim().slice(0, 60) || data.collections[i].name;
+  data.collections = data.collections.map(c => (c.id === id ? col : c));
+  write(snap => backend.putCollection(col, snap));
+  emit();
+  return col;
+}
+
+export function toggleInCollection(id, verseId) {
+  const col = data.collections.find(c => c.id === id);
+  if (!col) return null;
+  const has = col.verseIds.includes(verseId);
+  updateCollection(id, { verseIds: has ? col.verseIds.filter(v => v !== verseId) : [...col.verseIds, verseId] });
+  return !has;
+}
+
+export function deleteCollection(id) {
+  data.collections = data.collections.filter(c => c.id !== id);
+  write(snap => backend.removeCollection(id, snap));
+  emit();
 }
 
 // ---- device preferences (not tied to an account) ----

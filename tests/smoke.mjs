@@ -32,7 +32,8 @@ const ROUTES = [
   "#/", "#/reflection?e=tired", "#/daily", "#/reflect", "#/library", "#/library?q=2.47", "#/library?c=fear",
   "#/shlok/2-47", "#/shlok/6-35", "#/journey", "#/summary", "#/seven-days", "#/seven-days/1", "#/seven-days/7",
   "#/signup", "#/login", "#/forgot", "#/premium", "#/shop", "#/about", "#/how-it-works", "#/privacy",
-  "#/terms", "#/contact", "#/does-not-exist",
+  "#/terms", "#/contact", "#/refunds", "#/programs", "#/programs/30-purpose", "#/programs/14-steadiness/1",
+  "#/templates", "#/templates/decision", "#/journal", "#/collections", "#/does-not-exist",
   "gita/", "gita/bhagavad-gita-for-anxiety/", "gita/verse/2-47/"
 ];
 
@@ -343,9 +344,76 @@ await step("keyboard: skip link and focus visible", async () => {
   if (!/skip-link/.test(focused)) throw new Error(`first tab focused "${focused}"`);
 });
 
+await step("Premium features are gently gated for free members", async () => {
+  await page.goto(BASE + "#/programs/14-steadiness/1");
+  await page.waitForSelector("#program-text");
+  await page.goto(BASE + "#/programs/14-steadiness/2");
+  await page.waitForSelector(".premium-modal");
+  await page.keyboard.press("Escape");
+  await page.goto(BASE + "#/journal");
+  await expectText("main h1", /private journal/i);
+  await page.goto(BASE + "#/shlok/2-47");
+  await page.click('[data-act="collect"]');
+  await page.waitForSelector(".premium-modal");
+  await page.keyboard.press("Escape");
+  await page.goto(BASE + "#/");
+  await page.click('[data-emotion="tired"]');
+  await page.waitForSelector(".deeper-locked");
+});
+
+await step("Premium: programs, journal, collections, deeper prompts, templates", async () => {
+  await page.evaluate(() => {
+    const users = JSON.parse(localStorage.getItem("gr.users"));
+    const email = JSON.parse(localStorage.getItem("gr.session"));
+    users[email].plan = "premium";
+    localStorage.setItem("gr.users", JSON.stringify(users));
+  });
+  await page.reload();
+  await page.waitForSelector("main h1");
+  // program day beyond the free preview
+  await page.goto(BASE + "#/programs/30-purpose/12");
+  await page.fill("#program-text", "Trusting the slow ripening.");
+  await page.click('[data-act="complete"]');
+  await expectText(".status", /Saved/);
+  await page.goto(BASE + "#/programs/30-purpose");
+  await page.waitForSelector(".day-row.done");
+  // private journal
+  await page.goto(BASE + "#/journal");
+  await page.fill("#journal-text", "A quiet evening. Grateful for the walk.");
+  await page.click("[data-save]");
+  await expectText(".entries", /Grateful for the walk/);
+  // collections
+  await page.goto(BASE + "#/shlok/6-35");
+  await page.click('[data-act="collect"]');
+  await page.fill("#col-name", "Calm mind");
+  await page.click(".col-new button");
+  await page.waitForSelector(".col-row input:checked");
+  await page.keyboard.press("Escape");
+  await page.goto(BASE + "#/collections");
+  await page.click(".col-card");
+  await expectText("main h1", /Calm mind/);
+  await expectText(".verse-grid", /6\.35/);
+  // deeper prompts
+  await page.goto(BASE + "#/");
+  await page.click('[data-emotion="scared"]');
+  await page.waitForSelector(".deeper ol li");
+  const n = await page.locator(".deeper ol li").count();
+  if (n !== 3) throw new Error(`${n} deeper prompts`);
+  // templates print (stubbed)
+  await page.goto(BASE + "#/templates/decision");
+  await page.evaluate(() => { window.__printed = false; window.print = () => { window.__printed = true; }; });
+  await page.click("[data-print]");
+  if (!(await page.evaluate(() => window.__printed))) throw new Error("print not triggered");
+});
+
+await step("share links always use the public site address", async () => {
+  const link = await page.evaluate(async () => (await import("./assets/js/share.js")).verseLink("2.47"));
+  if (link !== "https://gita-reflection.vercel.app/#/shlok/2-47") throw new Error(link);
+});
+
 await step("premium shows coming soon without payment links", async () => {
-  await page.goto(BASE + "#/premium");
-  await page.click('[data-buy="monthly"]');
+  await page.goto(BASE + "#/shop");
+  await page.click("[data-product]");
   await page.waitForSelector(".modal-title");
   await expectText(".modal-title", /Coming soon/);
 });

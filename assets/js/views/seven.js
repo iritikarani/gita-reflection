@@ -57,7 +57,7 @@ function overview(root) {
         <p class="muted">${t("For when seven days leaves you wanting more.")}</p>
       </div>
       <div class="program-grid">
-        ${PROGRAMS.map(p => `<a class="program" href="#/premium">
+        ${PROGRAMS.map(p => `<a class="program" href="#/programs/${p.id}">
           <span class="program-days">${t("{n} days", { n: p.days })}</span>
           <span class="program-title">${esc(pick(p, "title"))}</span>
           <span class="program-desc">${esc(pick(p, "desc"))}</span>

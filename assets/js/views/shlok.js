@@ -1,7 +1,7 @@
 import { esc, lines, icon, autoGrow, divider } from "../ui.js";
 import { VERSE_BY_ID, CATEGORIES } from "../data/verses.js";
 import { relatedVerses, groupForVerse } from "../matcher.js";
-import { verseBlock, verseCardSmall, saveWithPrompt, saveVerseButton, bindSaveVerse } from "../components.js";
+import { verseBlock, verseCardSmall, saveWithPrompt, saveVerseButton, bindSaveVerse, openCollectionPicker } from "../components.js";
 import { session } from "../store.js";
 import { openShare } from "../share.js";
 import { openBreathe } from "./breathe.js";
@@ -50,6 +50,7 @@ export async function render(root, { params }) {
       <div class="actions">
         <button class="btn btn-primary" type="button" data-act="save-reflection">${icon("bookmark")}<span>${t("Save reflection")}</span></button>
         ${saveVerseButton(v.id)}
+        <button class="btn btn-ghost" type="button" data-act="collect">${icon("book")}<span>${t("Add to collection")}</span></button>
         <button class="btn btn-ghost" type="button" data-act="share">${icon("share")}<span>${t("Share")}</span></button>
         <button class="btn btn-ghost" type="button" data-act="breathe">${icon("breath")}<span>${t("2-minute pause")}</span></button>
       </div>
@@ -82,6 +83,7 @@ export async function render(root, { params }) {
       });
       if (saved) session.set(`${draftKey}.id`, saved.id);
     }
+    if (btn.dataset.act === "collect") openCollectionPicker(v.id);
     if (btn.dataset.act === "share") openShare({ verseId: v.id, reflection: pick(v, "question") });
     if (btn.dataset.act === "breathe") openBreathe({ verseId: v.id, question: pick(v, "question") });
   });

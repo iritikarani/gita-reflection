@@ -10,7 +10,7 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
   const users = new Map();      // id -> user
   const tokens = new Map();     // access token -> user id
   const refresh = new Map();    // refresh token -> user id
-  const tables = { profiles: [], reflections: [], saved_verses: [], journey_entries: [], month_notes: [] };
+  const tables = { profiles: [], reflections: [], saved_verses: [], journey_entries: [], month_notes: [], program_entries: [], collections: [] };
   const log = [];
   const state = { autoConfirm };
 
@@ -135,7 +135,12 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
     if (method === "POST") {
       if (table === "profiles") return json(403, { code: "42501", message: "permission denied for table profiles" });
       const prefer = headers.prefer || "";
-      const conflict = (params.get("on_conflict") || (table === "reflections" ? "id" : "")).split(",").filter(Boolean);
+      const conflict = (params.get("on_conflict") || (["reflections", "collections"].includes(table) ? "id" : "")).split(",").filter(Boolean);
+      const plan = tables.profiles.find(p => p.id === uid)?.plan;
+      for (const raw of [].concat(body)) {
+        const premiumOnly = table === "collections" || (table === "program_entries" && Number(raw.day) > 1);
+        if (premiumOnly && plan !== "premium") return json(400, { code: "P0001", message: "premium_required" });
+      }
       for (const raw of [].concat(body)) {
         const row = { ...raw, user_id: raw.user_id ?? uid };
         if (row.user_id !== uid) return json(403, { code: "42501", message: `new row violates row-level security policy for table "${table}"` });
@@ -162,6 +167,7 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
     }
 
     if (method === "PATCH") {
+      if (table === "collections" && tables.profiles.find(p => p.id === uid)?.plan !== "premium") return json(400, { code: "P0001", message: "premium_required" });
       if (table === "profiles" && Object.keys(body).some(k => !["name", "journey_finished_at"].includes(k))) {
         return json(403, { code: "42501", message: "permission denied for table profiles" });
       }

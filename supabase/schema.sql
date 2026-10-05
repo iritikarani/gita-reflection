@@ -59,12 +59,35 @@ create table if not exists public.month_notes (
   primary key (user_id, month)
 );
 
+-- ---------- Premium: guided programs (14 / 30 days) ----------
+create table if not exists public.program_entries (
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  program text not null check (char_length(program) <= 40),
+  day smallint not null check (day between 1 and 60),
+  body text check (char_length(body) <= 20000),
+  done boolean not null default false,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, program, day)
+);
+
+-- ---------- Premium: personal shlok collections ----------
+create table if not exists public.collections (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 60),
+  verse_ids text[] not null default '{}' check (cardinality(verse_ids) <= 200),
+  created_at timestamptz not null default now()
+);
+create index if not exists collections_user on public.collections (user_id, created_at desc);
+
 -- ---------- Row-level security ----------
 alter table public.profiles enable row level security;
 alter table public.reflections enable row level security;
 alter table public.saved_verses enable row level security;
 alter table public.journey_entries enable row level security;
 alter table public.month_notes enable row level security;
+alter table public.program_entries enable row level security;
+alter table public.collections enable row level security;
 
 drop policy if exists "own profile: read" on public.profiles;
 create policy "own profile: read" on public.profiles
@@ -81,7 +104,7 @@ grant update (name, journey_finished_at) on public.profiles to authenticated;
 do $$
 declare t text;
 begin
-  foreach t in array array['reflections', 'saved_verses', 'journey_entries', 'month_notes'] loop
+  foreach t in array array['reflections', 'saved_verses', 'journey_entries', 'month_notes', 'program_entries', 'collections'] loop
     execute format('drop policy if exists "own rows" on public.%I', t);
     execute format(
       'create policy "own rows" on public.%I for all to authenticated
@@ -90,6 +113,46 @@ begin
     execute format('grant select, insert, update, delete on public.%I to authenticated', t);
   end loop;
 end $$;
+
+-- Premium features are written only by Premium members.
+create or replace function public.require_premium()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if coalesce((select plan from public.profiles where id = new.user_id), 'free') <> 'premium' then
+    raise exception 'premium_required' using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+revoke execute on function public.require_premium() from public, anon, authenticated;
+
+drop trigger if exists collections_premium on public.collections;
+create trigger collections_premium before insert or update on public.collections
+  for each row execute function public.require_premium();
+
+-- Day 1 of each program is a free preview.
+create or replace function public.require_premium_after_day_one()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.day > 1 and coalesce((select plan from public.profiles where id = new.user_id), 'free') <> 'premium' then
+    raise exception 'premium_required' using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+revoke execute on function public.require_premium_after_day_one() from public, anon, authenticated;
+
+drop trigger if exists program_entries_premium on public.program_entries;
+create trigger program_entries_premium before insert or update on public.program_entries
+  for each row execute function public.require_premium_after_day_one();
 
 -- ---------- Create a profile when someone signs up ----------
 create or replace function public.handle_new_user()

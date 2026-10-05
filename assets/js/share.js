@@ -2,6 +2,21 @@
 import { esc, icon, openModal, toast } from "./ui.js";
 import { VERSE_BY_ID } from "./data/verses.js";
 import { t, pick, isHindi } from "./i18n.js";
+import { CONFIG } from "./config.js";
+
+const SITE = (CONFIG.siteUrl || location.origin).replace(/\/$/, "");
+const SITE_HOST = SITE.replace(/^https?:\/\//, "");
+
+// Brand name and web address at the foot of every card.
+function drawFooter(ctx) {
+  ctx.textAlign = "center";
+  ctx.fillStyle = C.ink;
+  ctx.font = '600 30px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
+  spaced(ctx, t("Gita Reflection"), W / 2, H - 128, 2);
+  ctx.fillStyle = C.gold;
+  ctx.font = '500 24px "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif';
+  ctx.fillText(SITE_HOST, W / 2, H - 88);
+}
 
 const W = 1080, H = 1350;
 const C = {
@@ -130,9 +145,7 @@ export async function renderVerseCard({ verseId, reflection }) {
     for (const l of wrap(ctx, reflection, W - 300).slice(0, 4)) { ctx.fillText(l, W / 2, y + 10); y += 46; }
   }
 
-  ctx.fillStyle = C.ink;
-  ctx.font = '600 30px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
-  spaced(ctx, t("Gita Reflection"), W / 2, H - 120, 2);
+  drawFooter(ctx);
   return canvas;
 }
 
@@ -177,10 +190,8 @@ export async function renderCompletionCard({ name, date, themes }) {
 
   ctx.fillStyle = C.soft;
   ctx.font = '400 26px "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif';
-  ctx.fillText(date, W / 2, H - 175);
-  ctx.fillStyle = C.ink;
-  ctx.font = '600 30px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
-  spaced(ctx, t("Gita Reflection"), W / 2, H - 120, 2);
+  ctx.fillText(date, W / 2, H - 190);
+  drawFooter(ctx);
   return canvas;
 }
 
@@ -210,8 +221,7 @@ export async function copyText(text) {
 }
 
 export function verseLink(verseId) {
-  const base = location.href.split("#")[0];
-  return `${base}#/shlok/${verseId.replace(".", "-")}`;
+  return `${SITE}/#/shlok/${verseId.replace(".", "-")}`;
 }
 
 export function shareText(verseId, reflection) {

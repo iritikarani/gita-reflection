@@ -165,3 +165,68 @@ export function emptyState({ title, text, action, level = 3 }) {
       ${action || ""}
     </div>`;
 }
+
+// Gentle note when someone reaches a Premium feature.
+export function premiumGate({ reason = "general" } = {}) {
+  const copy = {
+    program: ["Continue the full program", "Day 1 is yours to try. The rest of this guided program is part of Premium."],
+    collections: ["Personal collections", "Gather the verses that speak to you into your own named collections. This is part of Premium."],
+    journal: ["Your private journal", "A quiet place to write freely, with or without a verse. This is part of Premium."],
+    deeper: ["Go deeper", "Premium adds more questions to every reflection, for when one isn't enough."],
+    templates: ["Journal templates", "Printable pages for daily reflection, weekly review, decisions and gratitude. This is part of Premium."],
+    general: ["Part of Premium", "This is part of Premium."]
+  }[reason];
+  openModal({
+    title: t(copy[0]),
+    className: "premium-modal",
+    body: `
+      <p>${esc(t(copy[1]))}</p>
+      <p class="fine">${t("The essentials of Gita Reflection stay free, always.")}</p>
+      <div class="stack">
+        <a class="btn btn-primary btn-block" href="#/premium">${t("See Premium")}</a>
+      </div>`,
+    onOpen: (el, close) => el.querySelectorAll("a").forEach(a => a.addEventListener("click", close))
+  });
+}
+
+// "Add to collection" picker for a verse (Premium).
+export function openCollectionPicker(verseId) {
+  if (!store.currentUser()) return askToJoin({ reason: "verse" });
+  if (!store.isPremium()) return premiumGate({ reason: "collections" });
+  const draw = el => {
+    const cols = store.collections();
+    el.querySelector(".col-list").innerHTML = cols.length
+      ? cols.map(c => `<label class="col-row"><input type="checkbox" data-col="${esc(c.id)}" ${c.verseIds.includes(verseId) ? "checked" : ""}><span>${esc(c.name)}</span><span class="fine">${t("{n} verses", { n: c.verseIds.length })}</span></label>`).join("")
+      : `<p class="muted">${t("You don't have any collections yet.")}</p>`;
+  };
+  openModal({
+    title: t("Add to a collection"),
+    body: `
+      <div class="col-list"></div>
+      <form class="inline-form col-new">
+        <label class="sr-only" for="col-name">${t("New collection name")}</label>
+        <input id="col-name" maxlength="60" placeholder="${t("New collection, e.g. “For hard mornings”")}">
+        <button class="btn btn-ghost" type="submit">${t("Create")}</button>
+      </form>`,
+    onOpen: el => {
+      draw(el);
+      el.querySelector(".col-list").addEventListener("change", e => {
+        const box = e.target.closest("[data-col]");
+        if (!box) return;
+        const added = store.toggleInCollection(box.dataset.col, verseId);
+        toast(added ? t("Added to collection.") : t("Removed from collection."));
+        draw(el);
+      });
+      el.querySelector(".col-new").addEventListener("submit", e => {
+        e.preventDefault();
+        const input = el.querySelector("#col-name");
+        if (!input.value.trim()) return input.focus();
+        const col = store.createCollection(input.value);
+        store.toggleInCollection(col.id, verseId);
+        input.value = "";
+        toast(t("Collection created."));
+        draw(el);
+      });
+    }
+  });
+}

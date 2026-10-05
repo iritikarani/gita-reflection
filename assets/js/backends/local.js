@@ -107,6 +107,9 @@ export function createLocalBackend() {
     putJourneyEntry: (day, entry, data) => persist(data),
     clearJourney: data => persist(data),
     setJourneyFinished: (ts, data) => persist(data),
-    putMonthNote: (key, text, data) => persist(data)
+    putMonthNote: (key, text, data) => persist(data),
+    putProgramEntry: (programId, day, entry, data) => persist(data),
+    putCollection: (col, data) => persist(data),
+    removeCollection: (id, data) => persist(data)
   };
 }
