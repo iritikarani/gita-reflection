@@ -27,8 +27,11 @@ npm run test:supabase  # Supabase flows against a local mock of the Supabase API
 ```
 No build step for the app. After editing verse or guide content, regenerate the static pages:
 ```
-SITE_URL=https://your-domain.example npm run build
+SITE_URL=https://your-domain.example npm run build:pages
 ```
+
+## Deploying
+The site is static files served from the project root — there is no build step on Vercel or GitHub Pages. The guide pages in `gita/` are generated locally with `npm run build:pages` and committed. (Don't add a `build` script to `package.json`: Vercel would then expect a `public` output folder.)
 
 ## Configure before launch — `assets/js/config.js`
 - `supabase.url`, `supabase.anonKey` — connect Supabase for real accounts (setup: [SUPABASE.md](SUPABASE.md)). Leave empty to keep accounts in each visitor's browser.

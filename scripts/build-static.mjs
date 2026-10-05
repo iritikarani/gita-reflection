@@ -4,7 +4,7 @@
 //   gita/verse/<ch>-<v>/index.html  — one page per curated verse
 //   sitemap.xml, robots.txt
 //
-// Usage: SITE_URL=https://your-domain.example node scripts/build-static.mjs
+// Usage: SITE_URL=https://your-domain.example npm run build:pages
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
