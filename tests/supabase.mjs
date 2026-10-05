@@ -169,6 +169,21 @@ await step("duplicate sign-up shows a friendly message", async () => {
   await other.context.close();
 });
 
+await step("email delivery failure shows a gentle message", async () => {
+  mock.state.emailFails = true;
+  const other = await newPage();
+  await other.page.goto(BASE + "#/signup");
+  await other.page.fill("#name", "Test");
+  await other.page.fill("#email", "nomail@example.com");
+  await other.page.fill("#password", "quiet-mind-11");
+  await other.page.click('#auth-form button[type="submit"]');
+  await waitText(other.page, ".form-error", /couldn't send the email just now/);
+  const t = await other.page.locator(".form-error").innerText();
+  assert(!/Error sending/.test(t), "raw server error shown");
+  await other.context.close();
+  mock.state.emailFails = false;
+});
+
 await step("forgot password sends an email link", async () => {
   const other = await newPage();
   await other.page.goto(BASE + "#/forgot");

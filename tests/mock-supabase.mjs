@@ -60,6 +60,7 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
   function handleAuth(method, path, params, headers, body) {
     if (path === "/signup" && method === "POST") {
       if (findByEmail(body.email)) return authError(422, "user_already_exists", "User already registered");
+      if (state.emailFails) return authError(500, "unexpected_failure", "Error sending confirmation email");
       if (String(body.password || "").length < 6) return authError(422, "weak_password", "Password should be at least 6 characters.");
       const u = createUser({ email: body.email, password: body.password, data: body.data, confirmed: state.autoConfirm });
       log.push({ type: "signup", email: body.email, redirectTo: params.get("redirect_to") });

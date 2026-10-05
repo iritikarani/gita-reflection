@@ -9,6 +9,7 @@ const FRIENDLY = [
   [/invalid login credentials|invalid_credentials/i, "That email and password don't match an account."],
   [/email not confirmed/i, "Please confirm your email first — we sent a link to your inbox."],
   [/already registered|already exists|user_already_exists/i, "An account with this email already exists. Try logging in instead."],
+  [/error sending (confirmation|recovery|magic link|invite)? ?e?mail|unexpected_failure.*mail|smtp/i, "We couldn't send the email just now. Please try again in a few minutes."],
   [/rate limit|too many|over_email_send_rate_limit|429/i, "Too many attempts. Please wait a minute and try again."],
   [/password should be|weak_password|password.*(characters|length)/i, "Please choose a stronger password (at least 8 characters)."],
   [/same.*password|same_password/i, "Please choose a password different from your current one."],
