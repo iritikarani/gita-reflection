@@ -35,24 +35,53 @@ export function supabaseConfigured() {
   return Boolean(CONFIG.supabase?.url && CONFIG.supabase?.anonKey);
 }
 
+// Supabase's client is only needed right away if someone is signed in or is
+// arriving from an email link; otherwise it loads when they first log in or sign up.
+function needsSupabaseNow() {
+  try {
+    const ref = new URL(CONFIG.supabase.url).hostname.split(".")[0];
+    if (localStorage.getItem(`sb-${ref}-auth-token`)) return true;
+  } catch { /* storage unavailable */ }
+  return /(access_token|error_code|error_description)=/.test(location.hash);
+}
+
+let remotePromise = null;
+let remoteFailed = false;
+function loadRemote() {
+  if (!remotePromise) {
+    remotePromise = (async () => {
+      const { createSupabaseBackend } = await import("./backends/supabase.js");
+      backend = await createSupabaseBackend(CONFIG.supabase, {
+        onAuthEvent: ({ event, user, data: d }) => {
+          if (event === "SIGNED_OUT" && !me) return;
+          setSession({ user, data: d });
+          emit({ event });
+        }
+      });
+      return backend;
+    })().catch(e => {
+      console.error("Could not start Supabase.", e);
+      remotePromise = null;
+      throw new Error("We couldn't reach our server. Please check your connection and try again.");
+    });
+  }
+  return remotePromise;
+}
+
+// The backend to use for account actions (loads Supabase on demand).
+async function accounts() {
+  if (supabaseConfigured() && !remoteFailed) return loadRemote();
+  return backend;
+}
+
 // Called once at start-up, before the first page renders.
 export function init() {
   if (readyPromise) return readyPromise;
   readyPromise = (async () => {
     if (supabaseConfigured()) {
-      try {
-        const { createSupabaseBackend } = await import("./backends/supabase.js");
-        backend = await createSupabaseBackend(CONFIG.supabase, {
-          onAuthEvent: ({ event, user, data: d }) => {
-            if (event === "SIGNED_OUT" && !me) return;
-            setSession({ user, data: d });
-            emit({ event });
-          }
-        });
-      } catch (e) {
-        console.error("Could not start Supabase; using local accounts.", e);
-        backend = createLocalBackend();
-      }
+      if (!needsSupabaseNow()) { setSession(null); return; }
+      try { await loadRemote(); }
+      catch { remoteFailed = true; setSession(null); return; }
     }
     try { setSession(await backend.init()); }
     catch (e) { console.error(e); setSession(null); }
@@ -60,7 +89,12 @@ export function init() {
   return readyPromise;
 }
 
-export function backendMode() { return backend.mode; }
+// Fetch the Supabase client in the background so logging in feels instant.
+export function warmUp() {
+  if (supabaseConfigured()) import("./backends/supabase.js").then(m => m.preload?.()).catch(() => {});
+}
+
+export function backendMode() { return supabaseConfigured() && !remoteFailed ? "supabase" : "local"; }
 
 // ---- write queue: keeps writes in order, reports failures gently ----
 let queue = Promise.resolve();
@@ -91,7 +125,7 @@ export async function signUp({ name, email, password }) {
   if (!name) throw new Error("Please tell us what to call you.");
   if (!validEmail(email)) throw new Error("Please enter a valid email address.");
   if (String(password || "").length < 8) throw new Error("Please choose a password of at least 8 characters.");
-  const result = await backend.signUp({ name, email, password });
+  const result = await (await accounts()).signUp({ name, email, password });
   if (result.needsConfirmation) return { needsConfirmation: true };
   setSession(result);
   emit({ event: "SIGNED_IN" });
@@ -102,39 +136,39 @@ export async function logIn({ email, password }) {
   email = normEmail(email);
   if (!validEmail(email)) throw new Error("Please enter a valid email address.");
   if (!password) throw new Error("Please enter your password.");
-  setSession(await backend.logIn({ email, password }));
+  setSession(await (await accounts()).logIn({ email, password }));
   emit({ event: "SIGNED_IN" });
   return me;
 }
 
 export async function logOut() {
   await flush();
-  await backend.logOut();
+  await (await accounts()).logOut();
   setSession(null);
   emit({ event: "SIGNED_OUT" });
 }
 
 // Local accounts only: does this browser hold an account for this email?
-export function accountExists(email) { return backend.accountExists?.(normEmail(email)) ?? false; }
+export function accountExists(email) { return backendMode() === "local" ? (backend.accountExists?.(normEmail(email)) ?? false) : false; }
 
 // Supabase: email a reset link. Local: not available (use resetPassword on this device).
 export async function requestPasswordReset(email) {
   email = normEmail(email);
   if (!validEmail(email)) throw new Error("Please enter a valid email address.");
-  await backend.requestPasswordReset(email);
+  await (await accounts()).requestPasswordReset(email);
 }
 
 // Local accounts: set a new password on the device that holds the account.
 export async function resetPassword({ email, password }) {
   if (String(password || "").length < 8) throw new Error("Please choose a password of at least 8 characters.");
-  setSession(await backend.resetPassword({ email: normEmail(email), password }));
+  setSession(await (await accounts()).resetPassword({ email: normEmail(email), password }));
   emit({ event: "SIGNED_IN" });
 }
 
 // Supabase: set a new password for the signed-in (or recovering) user.
 export async function updatePassword(password) {
   if (String(password || "").length < 8) throw new Error("Please choose a password of at least 8 characters.");
-  await backend.updatePassword(password);
+  await (await accounts()).updatePassword(password);
 }
 
 export async function updateProfile({ name }) {

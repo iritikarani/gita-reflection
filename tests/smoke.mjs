@@ -42,6 +42,16 @@ const ok = (msg) => console.log("  ✓ " + msg);
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
 
+// This suite covers browser-only accounts, so serve config.js with Supabase switched off
+// (tests/supabase.mjs covers Supabase mode).
+async function localAccountsOnly(context) {
+  await context.route(/\/assets\/js\/config\.js(\?.*)?$/, async r => {
+    const res = await r.fetch();
+    const src = (await res.text()).replace(/(supabase:\s*\{\s*url:\s*)"[^"]*"/, '$1""').replace(/anonKey:\s*"[^"]*"/, 'anonKey: ""');
+    await r.fulfill({ response: res, body: src, headers: { ...res.headers(), "content-type": "text/javascript" } });
+  });
+}
+
 function watch(page, label) {
   const errors = [];
   page.on("pageerror", e => errors.push(`${label}: ${e.message}`));
@@ -65,6 +75,7 @@ for (const vp of VIEWPORTS) {
   console.log(`\n${vp.name} (${vp.width}×${vp.height})`);
   const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: !!vp.mobile, hasTouch: !!vp.mobile });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com|chiragmirani/, r => r.abort());
+  await localAccountsOnly(ctx);
   const page = await ctx.newPage();
   const errors = watch(page, vp.name);
   for (const route of ROUTES) {
@@ -100,6 +111,7 @@ for (const vp of VIEWPORTS) {
 console.log("\nflows");
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 await ctx.route(/fonts\.(googleapis|gstatic)\.com|chiragmirani/, r => r.abort());
+await localAccountsOnly(ctx);
 const page = await ctx.newPage();
 const errors = watch(page, "flow");
 

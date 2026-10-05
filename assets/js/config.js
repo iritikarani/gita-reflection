@@ -7,8 +7,8 @@ export const CONFIG = {
   // browser only. Fill both in to use Supabase (see SUPABASE.md). The anon key is
   // public by design — your data is protected by the row-level security in supabase/schema.sql.
   supabase: {
-    url: "",      // e.g. "https://abcdefgh.supabase.co"
-    anonKey: ""   // Project Settings → API → "anon public" (or the publishable) key
+    url: "https://hcdatxuimvmubdbxifty.supabase.co",
+    anonKey: "sb_publishable_FK1orC_pELoPag95_fbT3A_L3qEdkU5"
   },
 
   // Shown on the Contact page. Leave empty to hide the email address.

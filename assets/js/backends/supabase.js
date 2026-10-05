@@ -40,6 +40,8 @@ function reflectionToRow(r, userId) {
   };
 }
 
+export function preload() { return import("../../vendor/supabase-slim.mjs"); }
+
 export async function createSupabaseBackend({ url, anonKey }, { onAuthEvent } = {}) {
   const { AuthClient, PostgrestClient } = await import("../../vendor/supabase-slim.mjs");
   const base = url.replace(/\/$/, "");

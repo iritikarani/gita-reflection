@@ -235,4 +235,4 @@ start();
 
 // Warm the cache for the most-used views once the page is idle.
 const idle = window.requestIdleCallback || (fn => setTimeout(fn, 1500));
-idle(() => ["result", "daily", "conversation", "library"].forEach(loadView));
+idle(() => { ["result", "daily", "conversation", "library"].forEach(loadView); store.warmUp(); });

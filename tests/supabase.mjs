@@ -65,6 +65,16 @@ await step("pages render with Supabase enabled", async () => {
   await waitText(page, "main", /Supabase/);
 });
 
+await step("first visit renders without waiting for the Supabase client", async () => {
+  const other = await newPage();
+  await other.context.route(/supabase-slim\.mjs/, async r => { await new Promise(res => setTimeout(res, 4000)); await r.continue(); });
+  const t0 = Date.now();
+  await other.page.goto(BASE + "#/");
+  await other.page.waitForSelector("main .hero-title", { timeout: 3000 });
+  assert(Date.now() - t0 < 3000, "home waited for the Supabase client");
+  await other.context.close();
+});
+
 await step("guest save → sign up → reflection stored in the database", async () => {
   await page.goto(BASE + "#/");
   await page.click('[data-emotion="lonely"]');

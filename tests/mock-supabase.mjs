@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 
 const b64 = obj => Buffer.from(JSON.stringify(obj)).toString("base64url");
 
-export function createMockSupabase({ url = "https://testproject.supabase.co", anonKey = "test-anon-key", autoConfirm = true } = {}) {
+export function createMockSupabase({ url = "https://testproject.supabase.co", anonKey = "sb_publishable_test_0123456789abcdef", autoConfirm = true } = {}) {
   const users = new Map();      // id -> user
   const tokens = new Map();     // access token -> user id
   const refresh = new Map();    // refresh token -> user id
@@ -183,6 +183,11 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
     const headers = req.headers();
     if (req.method() === "OPTIONS") return r.fulfill({ status: 204, headers: cors() });
     if (headers.apikey !== anonKey) return r.fulfill({ ...json(401, { message: "Invalid API key" }), headers: cors() });
+    // Like Supabase's gateway: a non-JWT (publishable) key may appear as a Bearer token only if it equals the apikey header.
+    const bearer = (headers.authorization || "").replace(/^Bearer\s+/i, "");
+    if (bearer && !bearer.includes(".") && bearer !== headers.apikey) {
+      return r.fulfill({ ...json(401, { message: "Invalid Authorization header" }), headers: cors() });
+    }
     let body = {};
     try { body = req.postData() ? JSON.parse(req.postData()) : {}; } catch { body = {}; }
     const res = u.pathname.startsWith("/auth/v1")
@@ -209,8 +214,8 @@ export async function enableSupabaseConfig(context, mock) {
   await context.route(/\/assets\/js\/config\.js(\?.*)?$/, async r => {
     const res = await r.fetch();
     const src = (await res.text())
-      .replace(/url:\s*"",/, `url: "${mock.url}",`)
-      .replace(/anonKey:\s*""/, `anonKey: "${mock.anonKey}"`);
+      .replace(/(supabase:\s*\{\s*url:\s*)"[^"]*"/, `$1"${mock.url}"`)
+      .replace(/anonKey:\s*"[^"]*"/, `anonKey: "${mock.anonKey}"`);
     await r.fulfill({ response: res, body: src, headers: { ...res.headers(), "content-type": "text/javascript" } });
   });
   await context.route(mock.pattern, r => mock.route(r));
