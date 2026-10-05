@@ -16,7 +16,7 @@ This creates the tables, the security rules (each person can only ever see their
 
 ## 3. Set up sign-in emails
 **Authentication → URL Configuration**
-- **Site URL**: your website's address, e.g. `https://yourdomain.com/` (or `https://iritikarani.github.io/gita-reflection/`).
+- **Site URL**: your website's address, e.g. `https://gita-reflection.vercel.app/`.
 - **Redirect URLs**: add the same address. For local testing, also add `http://localhost:8080/`.
 
 **Authentication → Sign In / Providers → Email**
