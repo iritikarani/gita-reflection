@@ -1,0 +1,301 @@
+// Emotions, the words people use for them (English, Hindi, Hinglish),
+// and the gentle language used to respond. All text here is interpretation
+// written for Gita Reflection — never presented as scripture.
+
+export const EMOTIONS = {
+  tired: {
+    label: "I'm tired",
+    said: "I'm tired.",
+    tags: ["tired", "exhausted", "burnout", "rest", "overwhelmed", "results"],
+    group: "peace",
+    bridge: "When you're tired, it can start to feel as if everything depends on you, all at once.",
+    ack: "That sounds exhausting. Let's slow down for a moment.",
+    questions: [
+      "What is one thing you could stop carrying today, even for a little while?",
+      "What would rest look like for you right now — truly?",
+      "What would change if you focused only on what you can do today?"
+    ]
+  },
+  scared: {
+    label: "I'm scared",
+    said: "I'm scared.",
+    tags: ["fear", "future", "worry", "courage", "trust", "security"],
+    group: "fear",
+    bridge: "Fear often lives in the future — in what might happen, more than in what is happening right now.",
+    ack: "Fear can feel so loud. You're safe to pause here.",
+    questions: [
+      "What are you afraid will happen if things don't go as planned?",
+      "What is actually true right now, in this moment?",
+      "What would a steady friend remind you of?"
+    ]
+  },
+  overthinking: {
+    label: "I'm overthinking",
+    said: "I can't stop overthinking.",
+    tags: ["overthinking", "mind", "restless", "worry", "rumination", "anxious"],
+    group: "peace",
+    bridge: "An overthinking mind is usually trying to protect you — it just doesn't know when to rest.",
+    ack: "A busy mind is tiring. Let's give it somewhere gentle to land.",
+    questions: [
+      "What are you trying to control that may not be yours to control?",
+      "Which thought keeps returning — and what is it asking for?",
+      "If you set this question down for today, what would remain?"
+    ]
+  },
+  failed: {
+    label: "I failed",
+    said: "I failed.",
+    tags: ["failure", "effort", "mistake", "worth", "results", "perfectionism"],
+    group: "growth",
+    bridge: "When something doesn't work out, it's easy to let one result speak for your whole worth.",
+    ack: "I'm sorry it didn't go the way you hoped. That hurts.",
+    questions: [
+      "What did you learn about yourself through trying?",
+      "What would you say to a friend who failed at the same thing?",
+      "What would change if you separated your effort from the result?"
+    ]
+  },
+  confused: {
+    label: "I'm confused",
+    said: "I'm confused.",
+    tags: ["confused", "decision", "unsure", "clarity", "lost", "choice"],
+    group: "purpose",
+    bridge: "Confusion can feel like being lost, but it's often the honest beginning of finding your way.",
+    ack: "It's okay not to know yet. Let's sit with the question together.",
+    questions: [
+      "What do you already know, beneath the confusion?",
+      "If you didn't have to decide today, what would you want to explore?",
+      "What would you choose if no one else's expectations mattered?"
+    ]
+  },
+  lonely: {
+    label: "I'm lonely",
+    said: "I feel lonely.",
+    tags: ["lonely", "alone", "friend", "unseen", "comfort", "disconnected"],
+    group: "relationships",
+    bridge: "Loneliness can make it feel as if no one is on your side.",
+    ack: "Feeling alone is heavy. Thank you for sharing it here.",
+    questions: [
+      "Who, even in a small way, has been on your side lately?",
+      "What kind of connection are you missing most?",
+      "How could you be a kinder companion to yourself today?"
+    ]
+  },
+  angry: {
+    label: "I'm angry",
+    said: "I'm angry.",
+    tags: ["anger", "conflict", "irritation", "react", "relationship", "resentment"],
+    group: "relationships",
+    bridge: "Anger is often a signal that something important to you feels threatened or unheard.",
+    ack: "Anger is real and it's okay to feel it. Let's give it a little space before it decides anything.",
+    questions: [
+      "What does your anger want you to know?",
+      "What would you say once the anger softens a little?",
+      "What is underneath the anger — hurt, fear, or something else?"
+    ]
+  },
+  lost: {
+    label: "I feel lost",
+    said: "I feel lost.",
+    tags: ["lost", "purpose", "comparison", "identity", "confused", "stuck"],
+    group: "purpose",
+    bridge: "Feeling lost can mean you've outgrown an old path before the new one has appeared.",
+    ack: "Feeling lost is disorienting. You don't need the whole map right now.",
+    questions: [
+      "What has felt truly yours, even in small moments?",
+      "Whose path have you been trying to walk instead of your own?",
+      "What is the smallest next step that feels honest?"
+    ]
+  },
+  courage: {
+    label: "I need courage",
+    said: "I need courage.",
+    tags: ["courage", "brave", "rise", "fear", "action", "honest"],
+    group: "fear",
+    bridge: "Courage rarely feels like confidence. Usually it feels like fear, with one small step taken anyway.",
+    ack: "Asking for courage is itself a brave thing. Let's find some together.",
+    questions: [
+      "What would you do today if you trusted your own strength a little more?",
+      "What is the smallest brave thing you could do this week?",
+      "What would you attempt if winning and losing mattered a little less?"
+    ]
+  },
+  // States offered after "I don't know what I feel"
+  heavy: {
+    label: "Heavy",
+    said: "I feel heavy.",
+    tags: ["heavy", "overwhelmed", "rest", "grief", "pain", "surrender"],
+    group: "peace",
+    bridge: "When everything feels heavy, even small things can take a lot of strength.",
+    ack: "That heaviness sounds hard to carry. You can set it down here for a moment.",
+    questions: [
+      "What would it feel like to put the weight down, just for a few minutes?",
+      "What part of this heaviness is yours, and what part belongs to someone or something else?",
+      "What is one gentle thing you could do for yourself today?"
+    ]
+  },
+  empty: {
+    label: "Empty",
+    said: "I feel empty.",
+    tags: ["empty", "numb", "worth", "disconnected", "gratitude", "self"],
+    group: "self",
+    bridge: "Emptiness can be a quiet signal that something in you is asking for attention and care.",
+    ack: "Emptiness is a real feeling too. Let's be gentle with it.",
+    questions: [
+      "When did you last feel even a little bit full — of joy, meaning, or connection?",
+      "What small thing could you notice today as if for the first time?",
+      "What might this emptiness be making room for?"
+    ]
+  },
+  restless: {
+    label: "Restless",
+    said: "I feel restless.",
+    tags: ["restless", "overthinking", "scattered", "focus", "craving", "mind"],
+    group: "peace",
+    bridge: "Restlessness often means the mind is looking for somewhere to settle.",
+    ack: "Restlessness can feel like static. Let's find a still point.",
+    questions: [
+      "What is the 'wind' that keeps making your mind flicker?",
+      "What does your restlessness want you to do — and what do you actually need?",
+      "Where in your body do you feel this restlessness?"
+    ]
+  },
+  numb: {
+    label: "Numb",
+    said: "I feel numb.",
+    tags: ["numb", "tired", "empty", "rest", "temporary", "ordinary"],
+    group: "self",
+    bridge: "Numbness can be the mind's way of protecting you when things have felt like too much.",
+    ack: "Numbness can be a way of coping. There's no need to force any feeling right now.",
+    questions: [
+      "What has been asking too much of you lately?",
+      "What is one small sensation you can notice right now — warmth, sound, breath?",
+      "What would gentle care look like for you this week?"
+    ]
+  },
+  overwhelmed: {
+    label: "Overwhelmed",
+    said: "I feel overwhelmed.",
+    tags: ["overwhelmed", "tired", "heavy", "pressure", "stuck", "rest"],
+    group: "peace",
+    bridge: "When everything arrives at once, it's natural to feel that none of it is manageable.",
+    ack: "That's a lot to hold. Let's make it smaller, together.",
+    questions: [
+      "What would change if you focused only on what you can do today?",
+      "Which one thing, if handled, would make everything else feel lighter?",
+      "What could wait until tomorrow?"
+    ]
+  },
+  // Default for free text we couldn't place
+  general: {
+    label: "Something else",
+    said: "",
+    tags: ["heavy", "balance", "peace", "steady", "overwhelmed"],
+    group: "peace",
+    bridge: "Whatever you're carrying, it makes sense to want a moment of perspective.",
+    ack: "Thank you for sharing that. Let's take a breath with it.",
+    questions: [
+      "What would you like to feel by the end of today?",
+      "What is within your control right now — and what isn't?",
+      "What would a wise, kind friend say to you about this?"
+    ]
+  }
+};
+
+export const QUICK_CHOICES = ["tired", "scared", "overthinking", "failed", "confused", "lonely", "angry", "lost", "courage"];
+export const UNKNOWN_STATES = ["heavy", "empty", "restless", "confused", "numb", "overwhelmed"];
+
+// Groups shown on My Journey ("All, Peace, Fear, Relationships, Purpose, Self, Growth, Letting Go")
+export const GROUPS = [
+  { id: "peace", label: "Peace", pattern: "peace" },
+  { id: "fear", label: "Fear", pattern: "uncertainty" },
+  { id: "relationships", label: "Relationships", pattern: "relationships" },
+  { id: "purpose", label: "Purpose", pattern: "purpose and direction" },
+  { id: "self", label: "Self", pattern: "self-worth" },
+  { id: "growth", label: "Growth", pattern: "growth" },
+  { id: "letting-go", label: "Letting Go", pattern: "letting go" }
+];
+
+// Library category -> journey group
+export const CATEGORY_GROUP = {
+  "peace": "peace", "overthinking": "peace", "gratitude": "peace",
+  "fear": "fear", "courage": "fear", "difficult-times": "fear",
+  "relationships": "relationships",
+  "purpose": "purpose",
+  "self-worth": "self",
+  "failure": "growth", "growth": "growth",
+  "detachment": "letting-go"
+};
+
+// Words people actually type. Order does not matter; every match adds weight.
+// Each entry: [regex, emotionKey]
+export const LEXICON = [
+  // English
+  [/\b(tired|exhausted|drained|burn(ed|t)? ?out|no energy|fatigued|worn out|sleepy)\b/i, "tired"],
+  [/\b(scared|afraid|fear|frightened|terrified|nervous|panic|worried about (the )?future|uncertain(ty)?)\b/i, "scared"],
+  [/\b(overthink\w*|can'?t stop thinking|racing thoughts|ruminat\w*|anxious|anxiety|worry|worried|stress(ed)?|mind won'?t)\b/i, "overthinking"],
+  [/\b(fail(ed|ure|ing)?|lost (the|my) job|rejected|rejection|didn'?t (get|clear|pass)|mistake|messed up|screwed up|not good enough|useless)\b/i, "failed"],
+  [/\b(confus(ed|ion|ing)|don'?t know what to do|unsure|can'?t decide|decision|dilemma|torn between|should i)\b/i, "confused"],
+  [/\b(lonely|alone|isolated|no one (cares|understands)|nobody|left out|no friends|miss (him|her|them))\b/i, "lonely"],
+  [/\b(angry|anger|furious|mad at|irritated|annoyed|frustrat\w*|rage|hate|resent\w*)\b/i, "angry"],
+  [/\b(lost|no purpose|purpose|meaning(less)?|direction|stuck|what am i doing|pointless|career)\b/i, "lost"],
+  [/\b(should i (continue|quit|stay|leave|keep going)|whether (i|to) (should )?(continue|quit|stay|leave)|give up|giving up|keep going|quit)\b/i, "confused"],
+  [/\b(falling behind|behind everyone|compar(e|ing|ison)|everyone else is)\b/i, "lost"],
+  [/\b(courage|brave|strength|confidence|dare|need to face|scared to start)\b/i, "courage"],
+  [/\b(heavy|weigh(ed|s|ing)? (me )?down|burden|grief|griev\w*|sad|sadness|heartbroken|breakup|broke up|loss|died|passed away)\b/i, "heavy"],
+  [/\b(empty|hollow|nothing matters|void|worthless)\b/i, "empty"],
+  [/\b(restless|can'?t sit still|distracted|scattered|can'?t focus|agitated)\b/i, "restless"],
+  [/\b(numb|feel nothing|don'?t feel anything|disconnected)\b/i, "numb"],
+  [/\b(overwhelm\w*|too much|so much to do|pressure|can'?t cope|drowning|exam|exams|deadline)\b/i, "overwhelmed"],
+  // Hinglish (Roman Hindi)
+  [/\b(thak (gaya|gayi|gaye|chuka|chuki)|thaka hua|thaki hui|thakaan|thakan|bahut tired)\b/i, "tired"],
+  [/\b(dar (lag|lagta|lagti|raha|rahi)|darr|ghabrahat|ghabra|bhavishya|future ki (tension|chinta))\b/i, "scared"],
+  [/\b(zyada soch|jyada soch|bahut soch|soch soch|dimag (shant|chal) nahi|tension|chinta|pareshan)\b/i, "overthinking"],
+  [/\b(fail ho|haar gaya|haar gayi|nakam|asafal|galti)\b/i, "failed"],
+  [/\b(chhod (du|doon|dun)|continue karu|haar maan)\b/i, "confused"],
+  [/\b(samajh nahi|kya karu|kya karoon|kya karun|confuse|uljhan)\b/i, "confused"],
+  [/\b(akela|akeli|akelapan|koi nahi hai|tanha)\b/i, "lonely"],
+  [/\b(gussa|gusse|krodh|chidh)\b/i, "angry"],
+  [/\b(bhatak|raasta nahi|rasta nahi|maksad|uddeshya|purpose nahi)\b/i, "lost"],
+  [/\b(himmat|saahas|sahas|hausla)\b/i, "courage"],
+  [/\b(mann bhari|man bhari|dil bhari|udaas|udas|dukh|dard)\b/i, "heavy"],
+  [/\b(khali|khaali|sunapan)\b/i, "empty"],
+  [/\b(bechain|bechaini|ashant|man nahi lag)\b/i, "restless"],
+  [/\b(sab kuch zyada|bahut zyada ho gaya|bojh)\b/i, "overwhelmed"],
+  // Hindi (Devanagari) — no \b, which does not work with Devanagari
+  [/(थक|थकान|थका|थकी|ऊर्जा नहीं)/, "tired"],
+  [/(डर|भय|घबराहट|घबरा|भविष्य)/, "scared"],
+  [/(ज़्यादा सोच|ज्यादा सोच|बहुत सोच|चिंता|चिंतित|तनाव|परेशान)/, "overthinking"],
+  [/(असफल|हार गया|हार गई|नाकाम|गलती|ग़लती)/, "failed"],
+  [/(उलझन|भ्रम|समझ नहीं|क्या करूँ|क्या करूं|दुविधा)/, "confused"],
+  [/(अकेला|अकेली|अकेलापन|तन्हा)/, "lonely"],
+  [/(गुस्सा|क्रोध|चिढ़)/, "angry"],
+  [/(भटक|रास्ता नहीं|उद्देश्य|मकसद)/, "lost"],
+  [/(हिम्मत|साहस|हौसला)/, "courage"],
+  [/(उदास|दुख|दुःख|भारी|शोक|दर्द)/, "heavy"],
+  [/(खाली|सूनापन)/, "empty"],
+  [/(बेचैन|अशांत)/, "restless"],
+  [/(बोझ|बहुत ज़्यादा|सब कुछ एक साथ)/, "overwhelmed"]
+];
+
+// Phrases that indicate someone may be in danger. We err on the side of care.
+const CRISIS_PATTERNS = [
+  /\b(kill(ing)? myself|end (it all|my life|everything)|suicid\w*|want to die|wanna die|wish i (was|were) dead|better off dead|don'?t want to (live|be alive|exist)|no reason to live|not worth living|hurt(ing)? myself|self[- ]?harm|cut(ting)? myself|take my (own )?life|overdose)\b/i,
+  /\b(marna chahta|marna chahti|mar jaun|mar jaana|mar jana chahta|jeena nahi|jeene ka mann nahi|jeene ka man nahi|khudkushi|aatmhatya|atmahatya|khud ko (khatam|nuksan|nuksaan))\b/i,
+  /(आत्महत्या|मरना चाहता|मरना चाहती|मर जाऊं|मर जाऊँ|जीने का मन नहीं|जीना नहीं चाहता|जीना नहीं चाहती|खुद को नुकसान|ख़ुद को नुकसान|खुद को खत्म|ज़िंदगी खत्म)/
+];
+
+export function isCrisis(text) {
+  const t = String(text || "");
+  return CRISIS_PATTERNS.some(p => p.test(t));
+}
+
+// Returns emotion keys ranked by how strongly the text matches.
+export function detectEmotions(text) {
+  const t = String(text || "");
+  const scores = {};
+  for (const [pattern, key] of LEXICON) {
+    if (pattern.test(t)) scores[key] = (scores[key] || 0) + 1;
+  }
+  return Object.entries(scores).sort((a, b) => b[1] - a[1]).map(([k]) => k);
+}

@@ -1,8 +1,14 @@
 {
   "name": "gita-reflection",
   "private": true,
-  "version": "1.0.0",
-  "description": "AI-powered Bhagavad Gita reflection website",
+  "version": "2.0.0",
+  "description": "A calm place to pause, reflect, and find perspective through the wisdom of the Bhagavad Gita.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-static.mjs",
+    "serve": "npx http-server -p 8080 -c-1 .",
+    "test": "node tests/smoke.mjs"
+  },
   "dependencies": {
     "openai": "^5.12.0"
   }

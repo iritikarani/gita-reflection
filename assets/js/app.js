@@ -1,0 +1,200 @@
+// Gita Reflection — app shell and router.
+import * as store from "./store.js";
+import { esc, toast } from "./ui.js";
+import { startAmbience, stopAmbience } from "./sound.js";
+import { runPending } from "./components.js";
+
+const ROUTES = [
+  { path: "", view: "home", nav: "home", title: "" },
+  { path: "reflection", view: "result", nav: "home", title: "Your reflection" },
+  { path: "daily", view: "daily", nav: "daily", title: "Daily Gita" },
+  { path: "reflect", view: "conversation", nav: "reflect", title: "Reflect with the Gita" },
+  { path: "library", view: "library", nav: "library", title: "Shlok library" },
+  { path: "shlok/:id", view: "shlok", nav: "library", title: "Shlok" },
+  { path: "journey", view: "journey", nav: "journey", title: "My Journey" },
+  { path: "summary", view: "summary", nav: "journey", title: "Your month in reflection" },
+  { path: "seven-days", view: "seven", nav: "journey", title: "7 Days with the Gita" },
+  { path: "seven-days/:day", view: "seven", nav: "journey", title: "7 Days with the Gita" },
+  { path: "signup", view: "auth", nav: "", title: "Create an account", mode: "signup" },
+  { path: "login", view: "auth", nav: "", title: "Log in", mode: "login" },
+  { path: "forgot", view: "auth", nav: "", title: "Reset your password", mode: "forgot" },
+  { path: "profile", view: "profile", nav: "", title: "Profile" },
+  { path: "premium", view: "premium", nav: "", title: "Premium", mode: "premium" },
+  { path: "shop", view: "premium", nav: "", title: "Journals & resources", mode: "shop" },
+  { path: "about", view: "pages", nav: "", title: "About", mode: "about" },
+  { path: "how-it-works", view: "pages", nav: "", title: "How it works", mode: "how" },
+  { path: "privacy", view: "pages", nav: "", title: "Privacy", mode: "privacy" },
+  { path: "terms", view: "pages", nav: "", title: "Terms", mode: "terms" },
+  { path: "contact", view: "pages", nav: "", title: "Contact", mode: "contact" }
+];
+
+const viewCache = {};
+const loadView = name => (viewCache[name] ||= import(`./views/${name}.js`));
+
+function parseHash() {
+  const raw = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+  const [pathPart, queryPart = ""] = raw.split("?");
+  const path = pathPart.replace(/\/$/, "");
+  const query = Object.fromEntries(new URLSearchParams(queryPart));
+  for (const route of ROUTES) {
+    const keys = [];
+    const re = new RegExp("^" + route.path.replace(/:(\w+)/g, (_, k) => { keys.push(k); return "([^/]+)"; }) + "$");
+    const m = path.match(re);
+    if (m) return { route, params: Object.fromEntries(keys.map((k, i) => [k, m[i + 1]])), query };
+  }
+  return { route: null, params: {}, query };
+}
+
+export function navigate(path) {
+  if (location.hash === `#${path}`) render();
+  else location.hash = path;
+}
+
+let cleanup = null;
+let firstRender = true;
+let renderToken = 0;
+
+async function render() {
+  const token = ++renderToken;
+  const main = document.getElementById("main");
+  const { route, params, query } = parseHash();
+  if (typeof cleanup === "function") { try { cleanup(); } catch { /* ignore */ } }
+  cleanup = null;
+
+  document.querySelectorAll("[data-nav]").forEach(a => {
+    const active = route && a.dataset.nav === route.nav;
+    a.classList.toggle("active", Boolean(active));
+    if (active) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  closeProfileMenu();
+
+  if (!route) {
+    main.innerHTML = `<section class="wrap narrow page-pad center"><h1 tabindex="-1">This page has drifted away</h1><p class="lead">The link may be old or mistyped.</p><a class="btn btn-primary" href="#/">Return home</a></section>`;
+    document.title = "Not found — Gita Reflection";
+    focusHeading(main);
+    return;
+  }
+
+  let mod;
+  try {
+    mod = await loadView(route.view);
+  } catch (e) {
+    console.error(e);
+    main.innerHTML = `<section class="wrap narrow page-pad center"><h1 tabindex="-1">We couldn't open this page</h1><p class="lead">Please check your connection and try again.</p><button class="btn btn-primary" type="button" onclick="location.reload()">Try again</button></section>`;
+    return;
+  }
+  if (token !== renderToken) return;
+
+  main.classList.remove("enter");
+  const result = await mod.render(main, { params, query, mode: route.mode, navigate });
+  if (token !== renderToken) return;
+  cleanup = result;
+  void main.offsetWidth;
+  main.classList.add("enter");
+
+  const heading = main.querySelector("h1");
+  const pageTitle = route.title || "";
+  document.title = pageTitle ? `${heading?.dataset.title || pageTitle} — Gita Reflection` : "Gita Reflection — A calm place to pause and reflect";
+
+  window.scrollTo(0, 0);
+  if (!firstRender) focusHeading(main);
+  firstRender = false;
+}
+
+function focusHeading(main) {
+  const h = main.querySelector("h1");
+  if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+}
+
+// ---- header: profile menu ----
+const profileBtn = document.getElementById("profile-btn");
+const profilePop = document.getElementById("profile-pop");
+
+function renderProfileMenu() {
+  const me = store.currentUser();
+  const initial = document.querySelector(".avatar-initial");
+  profileBtn.classList.toggle("signed-in", Boolean(me));
+  initial.textContent = me ? (me.name || me.email).trim().charAt(0).toUpperCase() : "";
+  profileBtn.setAttribute("aria-label", me ? `Account menu for ${me.name}` : "Account menu");
+  profilePop.innerHTML = me
+    ? `<p class="pop-head"><strong>${esc(me.name)}</strong><span>${esc(me.email)}</span></p>
+       <a href="#/journey">My Journey</a>
+       <a href="#/seven-days">7-Day Journey</a>
+       <a href="#/summary">Monthly summary</a>
+       <a href="#/profile">Profile &amp; settings</a>
+       ${me.plan === "premium" ? "" : `<a href="#/premium">Go deeper with Premium</a>`}
+       <button type="button" data-logout>Log out</button>`
+    : `<p class="pop-head"><strong>Welcome</strong><span>No account needed to reflect.</span></p>
+       <a href="#/login">Log in</a>
+       <a href="#/signup">Create a free account</a>
+       <a href="#/seven-days">7-Day Journey</a>
+       <a href="#/premium">Premium</a>`;
+}
+
+function closeProfileMenu() {
+  profilePop.hidden = true;
+  profileBtn.setAttribute("aria-expanded", "false");
+}
+
+profileBtn.addEventListener("click", e => {
+  e.stopPropagation();
+  const open = profilePop.hidden;
+  profilePop.hidden = !open;
+  profileBtn.setAttribute("aria-expanded", String(open));
+  if (open) profilePop.querySelector("a, button")?.focus();
+});
+profilePop.addEventListener("click", e => {
+  if (e.target.closest("[data-logout]")) {
+    store.logOut();
+    toast("You've logged out. Come back whenever you need a quiet moment.");
+    navigate("/");
+  }
+  if (e.target.closest("a, button")) closeProfileMenu();
+});
+document.addEventListener("click", e => { if (!e.target.closest(".profile-menu")) closeProfileMenu(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !profilePop.hidden) { closeProfileMenu(); profileBtn.focus(); }
+});
+
+// ---- header: ambient sound (off by default) ----
+const soundBtn = document.getElementById("sound-toggle");
+let soundOn = false;
+function setSound(on) {
+  soundOn = on;
+  soundBtn.setAttribute("aria-pressed", String(on));
+  soundBtn.setAttribute("aria-label", `Peaceful ambience: ${on ? "on" : "off"}`);
+  soundBtn.classList.toggle("on", on);
+  if (on) startAmbience(); else stopAmbience();
+}
+soundBtn.addEventListener("click", () => {
+  setSound(!soundOn);
+  store.setPref("sound", soundOn);
+  toast(soundOn ? "Peaceful ambience on." : "Ambience off.");
+});
+
+// ---- theme ----
+function applyTheme() {
+  const { theme } = store.prefs();
+  const allowed = theme === "ivory" || theme === "dusk" || store.isPremium();
+  document.documentElement.dataset.theme = allowed ? theme : "ivory";
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#F6F0E4";
+}
+
+store.subscribe(() => { renderProfileMenu(); applyTheme(); });
+
+// Exposed for auth views to resume what the visitor was doing.
+export function afterAuth(next) {
+  runPending();
+  navigate(next ? `/${next.replace(/^\//, "")}` : "/journey");
+}
+
+document.getElementById("year").textContent = new Date().getFullYear();
+renderProfileMenu();
+applyTheme();
+window.addEventListener("hashchange", render);
+render();
+
+// Warm the cache for the most-used views once the page is idle.
+const idle = window.requestIdleCallback || (fn => setTimeout(fn, 1500));
+idle(() => ["result", "daily", "conversation", "library"].forEach(loadView));
