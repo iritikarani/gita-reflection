@@ -11,8 +11,5 @@
     "test:supabase": "node tests/supabase.mjs",
     "vendor:supabase": "bash scripts/vendor-supabase.sh",
     "test:hindi": "node tests/hindi.mjs"
-  },
-  "dependencies": {
-    "openai": "^5.12.0"
   }
 }

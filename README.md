@@ -49,4 +49,3 @@ Static, framework-free ES modules (`assets/js`), hash routing, views lazy-loaded
 - `store.js` — accounts and saved data. Pages read from an in-memory copy; writes go, in order, to one of two backends:
   - `backends/supabase.js` — Supabase Auth + Postgres with row-level security (`supabase/schema.sql`), used when configured. Loads a slim vendored client (`assets/vendor/supabase-slim.mjs`, ~30 KB gzipped) only in that case.
   - `backends/local.js` — accounts stored in the visitor's browser (PBKDF2-hashed passwords); the default when Supabase isn't configured.
-- `api/gita.js` is the earlier optional OpenAI endpoint; the current site does not call it.
