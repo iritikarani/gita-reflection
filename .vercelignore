@@ -1,0 +1,7 @@
+# Development-only files: not needed on the live site
+tests
+scripts
+supabase
+*.md
+!README.md
+products
