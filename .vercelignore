@@ -4,3 +4,4 @@ scripts
 supabase
 *.md
 !README.md
+products
