@@ -6,6 +6,7 @@ import { session } from "../store.js";
 import { openShare } from "../share.js";
 import { openBreathe } from "./breathe.js";
 import { loadFullGita } from "../fulldata.js";
+import { t, pick } from "../i18n.js";
 
 export async function render(root, { params }) {
   const id = String(params.id || "").replace("-", ".");
@@ -18,50 +19,50 @@ export async function render(root, { params }) {
   root.innerHTML = `
   <article class="shlok-page">
     <header class="wrap narrow page-head center">
-      <p class="eyebrow"><a href="#/library">Shlok library</a> · Chapter ${v.ch}</p>
-      <h1 data-title="Bhagavad Gita ${v.ch}.${v.v}">Bhagavad Gita ${v.ch}.${v.v}</h1>
-      <div class="chips chips-center">${cats.map(c => `<a class="chip chip-small" href="#/library?c=${c.id}">${esc(c.label)}</a>`).join("")}</div>
+      <p class="eyebrow"><a href="#/library">${t("Shlok library")}</a> · ${t("Chapter {n}", { n: v.ch })}</p>
+      <h1 data-title="${t("Bhagavad Gita")} ${v.ch}.${v.v}">${t("Bhagavad Gita")} ${v.ch}.${v.v}</h1>
+      <div class="chips chips-center">${cats.map(c => `<a class="chip chip-small" href="#/library?c=${c.id}">${esc(pick(c, "label"))}</a>`).join("")}</div>
     </header>
 
     <section class="wrap narrow">${verseBlock(v, { headingLevel: 2 })}</section>
 
     <section class="wrap narrow detail-grid">
       <div class="detail">
-        <h2 class="section-label">Context</h2>
-        <p>${esc(v.context)}</p>
+        <h2 class="section-label">${t("Context")}</h2>
+        <p>${esc(pick(v, "context"))}</p>
       </div>
       <div class="detail">
-        <h2 class="section-label">When this may help</h2>
-        <p>${esc(v.helps)}</p>
+        <h2 class="section-label">${t("When this may help")}</h2>
+        <p>${esc(pick(v, "helps"))}</p>
       </div>
     </section>
 
     <section class="wrap narrow moment" aria-labelledby="q-h">
       ${divider()}
-      <h2 id="q-h" class="section-label">Reflection question</h2>
-      <p class="question">${esc(v.question)}</p>
-      <label class="sr-only" for="shlok-text">Your reflection</label>
-      <textarea id="shlok-text" class="journal" rows="3" placeholder="Write as much or as little as you like…">${esc(session.get(draftKey, ""))}</textarea>
+      <h2 id="q-h" class="section-label">${t("Reflection question")}</h2>
+      <p class="question">${esc(pick(v, "question"))}</p>
+      <label class="sr-only" for="shlok-text">${t("Your reflection")}</label>
+      <textarea id="shlok-text" class="journal" rows="3" placeholder="${t("Write as much or as little as you like…")}">${esc(session.get(draftKey, ""))}</textarea>
       <div class="practice">
-        <h3 class="section-label">A small practice</h3>
-        <p>${esc(v.practice)}</p>
+        <h3 class="section-label">${t("A small practice")}</h3>
+        <p>${esc(pick(v, "practice"))}</p>
       </div>
       <div class="actions">
-        <button class="btn btn-primary" type="button" data-act="save-reflection">${icon("bookmark")}<span>Save reflection</span></button>
+        <button class="btn btn-primary" type="button" data-act="save-reflection">${icon("bookmark")}<span>${t("Save reflection")}</span></button>
         ${saveVerseButton(v.id)}
-        <button class="btn btn-ghost" type="button" data-act="share">${icon("share")}<span>Share</span></button>
-        <button class="btn btn-ghost" type="button" data-act="breathe">${icon("breath")}<span>2-minute pause</span></button>
+        <button class="btn btn-ghost" type="button" data-act="share">${icon("share")}<span>${t("Share")}</span></button>
+        <button class="btn btn-ghost" type="button" data-act="breathe">${icon("breath")}<span>${t("2-minute pause")}</span></button>
       </div>
     </section>
 
     <section class="wrap" aria-labelledby="rel-h">
-      <h2 id="rel-h" class="section-label center">Related teachings</h2>
+      <h2 id="rel-h" class="section-label center">${t("Related teachings")}</h2>
       <div class="verse-grid">${relatedVerses(v).map(r => verseCardSmall(r)).join("")}</div>
     </section>
 
     <section class="wrap narrow center cta-quiet">
-      <p class="statement small">Is something on your mind?</p>
-      <a class="btn btn-ghost" href="#/">Share what you're feeling ${icon("arrow")}</a>
+      <p class="statement small">${t("Is something on your mind?")}</p>
+      <a class="btn btn-ghost" href="#/">${t("Share what you're feeling")} ${icon("arrow")}</a>
     </section>
   </article>`;
 
@@ -76,13 +77,13 @@ export async function render(root, { params }) {
     if (btn.dataset.act === "save-reflection") {
       const saved = saveWithPrompt({
         id: session.get(`${draftKey}.id`) || undefined,
-        source: "library", said: `Reflecting on ${v.ch}.${v.v}`, emotion: null, group: groupForVerse(v),
-        verseId: v.id, question: v.question, text: ta.value.trim()
+        source: "library", said: t("Reflecting on {ref}", { ref: `${v.ch}.${v.v}` }), emotion: null, group: groupForVerse(v),
+        verseId: v.id, question: pick(v, "question"), text: ta.value.trim()
       });
       if (saved) session.set(`${draftKey}.id`, saved.id);
     }
-    if (btn.dataset.act === "share") openShare({ verseId: v.id, reflection: v.question });
-    if (btn.dataset.act === "breathe") openBreathe({ verseId: v.id, question: v.question });
+    if (btn.dataset.act === "share") openShare({ verseId: v.id, reflection: pick(v, "question") });
+    if (btn.dataset.act === "breathe") openBreathe({ verseId: v.id, question: pick(v, "question") });
   });
 }
 
@@ -90,13 +91,13 @@ async function renderExternal(root, id) {
   const valid = /^\d{1,2}\.\d{1,3}$/.test(id);
   root.innerHTML = `
     <section class="wrap narrow page-head center">
-      <p class="eyebrow"><a href="#/library">Shlok library</a></p>
-      <h1 data-title="Bhagavad Gita ${esc(id)}">Bhagavad Gita ${esc(id)}</h1>
-      <div class="loading-line" aria-live="polite"><span class="breath-dot"></span> Opening the verse…</div>
+      <p class="eyebrow"><a href="#/library">${t("Shlok library")}</a></p>
+      <h1 data-title="${t("Bhagavad Gita")} ${esc(id)}">${t("Bhagavad Gita")} ${esc(id)}</h1>
+      <div class="loading-line" aria-live="polite"><span class="breath-dot"></span> ${t("Opening the verse…")}</div>
     </section>`;
   const box = root.querySelector(".page-head");
   if (!valid) {
-    box.querySelector(".loading-line").outerHTML = `<p class="lead">That doesn't look like a verse reference. Try something like 2.47.</p><a class="btn btn-ghost" href="#/library">Back to the library</a>`;
+    box.querySelector(".loading-line").outerHTML = `<p class="lead center">${t("That doesn't look like a verse reference. Try something like 2.47.")}</p><a class="btn btn-ghost" href="#/library">${t("Back to the library")}</a>`;
     return;
   }
   try {
@@ -111,15 +112,15 @@ async function renderExternal(root, id) {
             ${v.tr ? `<p class="translit">${lines(v.tr)}</p>` : ""}
           </div>
           <div class="layers">
-            <section class="layer"><h2 class="layer-label">Translation</h2><p class="translation">${esc(v.en)}</p></section>
+            <section class="layer"><h2 class="layer-label">${t("Translation")}</h2><p class="translation">${esc(v.en)}</p></section>
           </div>
-          <p class="fine">Sanskrit and translation from the public Gita Quotes dataset. This verse isn't in our curated library yet, so there's no simple meaning or reflection for it.</p>
+          <p class="fine">${t("Sanskrit and translation from the public Gita Quotes dataset. This verse isn't in our curated library yet, so there's no simple meaning or reflection for it.")}</p>
         </div>
       </section>`);
     box.querySelector(".loading-line").remove();
   } catch {
     box.querySelector(".loading-line").outerHTML = `
-      <p class="lead">This verse isn't in our curated library yet, and we couldn't reach the full Gita right now.</p>
-      <a class="btn btn-ghost" href="#/library">Browse curated teachings</a>`;
+      <p class="lead center">${t("This verse isn't in our curated library yet, and we couldn't reach the full Gita right now.")}</p>
+      <a class="btn btn-ghost" href="#/library">${t("Browse curated teachings")}</a>`;
   }
 }

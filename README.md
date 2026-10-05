@@ -5,6 +5,7 @@ A calm place to pause, reflect, and find perspective through the wisdom of the B
 **Journey:** arrive → pause → share how you feel → receive a relevant shlok → reflect → save → return.
 
 ## Features
+- **English and हिन्दी** — every page, button, message, verse interpretation, journey and share card in both languages. A switch in the header (हिं / EN) and in Profile; Hindi-language browsers start in Hindi. Every text box accepts Hindi, English and Hinglish in either mode. Interface text lives in `assets/js/data/hi.js` (English text is the key; anything missing falls back to English); verse, emotion and journey Hindi lives beside the English content (`verses-hi.js`, `emotions.js`, `journey.js`).
 - **Home** — "What's troubling you?" in English, हिन्दी or Hinglish, quick feeling choices, and "I don't know what I feel" (Heavy, Empty, Restless, Confused, Numb, Overwhelmed).
 - **Reflection result** — what you said, the shlok (Sanskrit, transliteration, translation, Hindi), "Why this may speak to you", one question, Save / Share / Read another / 2-minute reflection.
 - **Daily Gita** — the same shlok for everyone each day, with a question and a small practice. Optional calendar reminder (`.ics`), no streaks.
@@ -24,6 +25,7 @@ A calm place to pause, reflect, and find perspective through the wisdom of the B
 npm run serve        # http://localhost:8080
 npm test             # Playwright smoke test (every route × 6 viewports + core flows)
 npm run test:supabase  # Supabase flows against a local mock of the Supabase API
+npm run test:hindi     # every page and the main flows in Hindi, plus untranslated-text check
 ```
 No build step for the app. After editing verse or guide content, regenerate the static pages:
 ```

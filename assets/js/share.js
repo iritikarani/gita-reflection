@@ -1,6 +1,7 @@
 // Beautiful, minimal share cards drawn on <canvas>, plus the share sheet.
 import { esc, icon, openModal, toast } from "./ui.js";
 import { VERSE_BY_ID } from "./data/verses.js";
+import { t, pick, isHindi } from "./i18n.js";
 
 const W = 1080, H = 1350;
 const C = {
@@ -15,7 +16,8 @@ async function ensureFonts() {
       document.fonts.load('500 64px "Cormorant Garamond"'),
       document.fonts.load('italic 500 40px "Cormorant Garamond"'),
       document.fonts.load('500 26px "DM Sans"'),
-      document.fonts.load('500 40px "Noto Serif Devanagari"', "कर्म")
+      document.fonts.load('500 40px "Noto Serif Devanagari"', "कर्म"),
+      document.fonts.load('500 26px "Noto Sans Devanagari"', "कर्म")
     ]);
   } catch { /* fall back to system fonts */ }
 }
@@ -70,7 +72,8 @@ function drawMark(ctx, cx, cy, s = 1) {
 }
 
 function spaced(ctx, text, x, y, spacing) {
-  // Letter-spaced, centred caption.
+  // Letter-spaced, centred caption. Devanagari is drawn without spacing so conjuncts stay joined.
+  if (/[\u0900-\u097F]/.test(text)) { ctx.textAlign = "center"; ctx.fillText(text, x, y); return; }
   const chars = [...text];
   const width = chars.reduce((s, ch) => s + ctx.measureText(ch).width + spacing, -spacing);
   let cx = x - width / 2;
@@ -92,8 +95,8 @@ export async function renderVerseCard({ verseId, reflection }) {
   drawMark(ctx, W / 2, 330, 1.6);
 
   ctx.fillStyle = C.sage;
-  ctx.font = '500 24px "DM Sans", system-ui, sans-serif';
-  spaced(ctx, "A THOUGHT FROM THE BHAGAVAD GITA", W / 2, 420, 4);
+  ctx.font = '500 24px "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif';
+  spaced(ctx, isHindi() ? "भगवद्गीता से एक विचार" : "A THOUGHT FROM THE BHAGAVAD GITA", W / 2, 420, 4);
 
   // First line of Sanskrit
   const firstLine = v.sa.split("\n")[0].replace(/[।॥]/g, "").trim();
@@ -105,16 +108,17 @@ export async function renderVerseCard({ verseId, reflection }) {
   // Meaning
   ctx.fillStyle = C.ink;
   let size = 58;
-  ctx.font = `500 ${size}px "Cormorant Garamond", Georgia, serif`;
-  let meaning = wrap(ctx, `“${v.meaning}”`, W - 260);
-  if (meaning.length > 6) { size = 48; ctx.font = `500 ${size}px "Cormorant Garamond", Georgia, serif`; meaning = wrap(ctx, `“${v.meaning}”`, W - 240); }
+  ctx.font = `500 ${size}px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif`;
+  const meaningText = pick(v, "meaning");
+  let meaning = wrap(ctx, `“${meaningText}”`, W - 260);
+  if (meaning.length > 6) { size = 48; ctx.font = `500 ${size}px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif`; meaning = wrap(ctx, `“${meaningText}”`, W - 240); }
   y += 40;
   for (const l of meaning.slice(0, 8)) { ctx.fillText(l, W / 2, y); y += size * 1.22; }
 
   ctx.fillStyle = C.gold;
-  ctx.font = '500 26px "DM Sans", system-ui, sans-serif';
+  ctx.font = '500 26px "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif';
   y += 14;
-  ctx.fillText(`Bhagavad Gita ${v.ch}.${v.v}`, W / 2, y);
+  ctx.fillText(`${t("Bhagavad Gita")} ${v.ch}.${v.v}`, W / 2, y);
 
   // Reflection
   if (reflection) {
@@ -122,13 +126,13 @@ export async function renderVerseCard({ verseId, reflection }) {
     ctx.strokeStyle = C.line; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(W / 2 - 60, y - 34); ctx.lineTo(W / 2 + 60, y - 34); ctx.stroke();
     ctx.fillStyle = C.soft;
-    ctx.font = 'italic 500 36px "Cormorant Garamond", Georgia, serif';
+    ctx.font = 'italic 500 36px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
     for (const l of wrap(ctx, reflection, W - 300).slice(0, 4)) { ctx.fillText(l, W / 2, y + 10); y += 46; }
   }
 
   ctx.fillStyle = C.ink;
-  ctx.font = '600 30px "Cormorant Garamond", Georgia, serif';
-  spaced(ctx, "Gita Reflection", W / 2, H - 120, 2);
+  ctx.font = '600 30px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
+  spaced(ctx, t("Gita Reflection"), W / 2, H - 120, 2);
   return canvas;
 }
 
@@ -142,41 +146,41 @@ export async function renderCompletionCard({ name, date, themes }) {
   drawMark(ctx, W / 2, 330, 1.8);
 
   ctx.fillStyle = C.sage;
-  ctx.font = '500 24px "DM Sans", system-ui, sans-serif';
-  spaced(ctx, "7 DAYS WITH THE GITA", W / 2, 430, 5);
+  ctx.font = '500 24px "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif';
+  spaced(ctx, isHindi() ? "गीता के साथ 7 दिन" : "7 DAYS WITH THE GITA", W / 2, 430, 5);
 
   ctx.fillStyle = C.ink;
-  ctx.font = '500 66px "Cormorant Garamond", Georgia, serif';
+  ctx.font = '500 66px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
   let y = 540;
-  for (const l of wrap(ctx, "You completed your 7-day reflection journey.", W - 300)) { ctx.fillText(l, W / 2, y); y += 78; }
+  for (const l of wrap(ctx, t("You completed your 7-day reflection journey."), W - 300)) { ctx.fillText(l, W / 2, y); y += 78; }
 
   if (name) {
     ctx.fillStyle = C.soft;
-    ctx.font = 'italic 500 44px "Cormorant Garamond", Georgia, serif';
+    ctx.font = 'italic 500 44px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
     ctx.fillText(name, W / 2, y + 30);
     y += 60;
   }
 
   y += 70;
   ctx.fillStyle = C.soft;
-  ctx.font = '400 28px "DM Sans", system-ui, sans-serif';
+  ctx.font = '400 28px "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif';
   const rows = [themes.slice(0, 4).join("  ·  "), themes.slice(4).join("  ·  ")];
   for (const r of rows) { ctx.fillText(r, W / 2, y); y += 48; }
 
   y += 50;
   ctx.fillStyle = C.ink;
-  ctx.font = 'italic 500 36px "Cormorant Garamond", Georgia, serif';
-  for (const l of wrap(ctx, "“As rivers flow into the ocean, ever being filled yet still…”", W - 320)) { ctx.fillText(l, W / 2, y); y += 46; }
+  ctx.font = 'italic 500 36px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
+  for (const l of wrap(ctx, isHindi() ? "“जैसे नदियाँ समुद्र में मिलती हैं, जो भरता रहता है फिर भी स्थिर रहता है…”" : "“As rivers flow into the ocean, ever being filled yet still…”", W - 320)) { ctx.fillText(l, W / 2, y); y += 46; }
   ctx.fillStyle = C.gold;
-  ctx.font = '500 24px "DM Sans", system-ui, sans-serif';
-  ctx.fillText("Bhagavad Gita 2.70", W / 2, y + 6);
+  ctx.font = '500 24px "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif';
+  ctx.fillText(`${t("Bhagavad Gita")} 2.70`, W / 2, y + 6);
 
   ctx.fillStyle = C.soft;
-  ctx.font = '400 26px "DM Sans", system-ui, sans-serif';
+  ctx.font = '400 26px "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif';
   ctx.fillText(date, W / 2, H - 175);
   ctx.fillStyle = C.ink;
-  ctx.font = '600 30px "Cormorant Garamond", Georgia, serif';
-  spaced(ctx, "Gita Reflection", W / 2, H - 120, 2);
+  ctx.font = '600 30px "Cormorant Garamond", "Noto Serif Devanagari", Georgia, serif';
+  spaced(ctx, t("Gita Reflection"), W / 2, H - 120, 2);
   return canvas;
 }
 
@@ -202,7 +206,7 @@ export async function copyText(text) {
     try { document.execCommand("copy"); } catch { /* ignore */ }
     ta.remove();
   }
-  toast("Copied to your clipboard.");
+  toast(t("Copied to your clipboard."));
 }
 
 export function verseLink(verseId) {
@@ -213,13 +217,13 @@ export function verseLink(verseId) {
 export function shareText(verseId, reflection) {
   const v = VERSE_BY_ID[verseId];
   return [
-    "A thought from the Bhagavad Gita",
+    t("A thought from the Bhagavad Gita"),
     "",
-    `“${v.meaning}”`,
-    `— Bhagavad Gita ${v.ch}.${v.v}`,
+    `“${pick(v, "meaning")}”`,
+    `— ${t("Bhagavad Gita")} ${v.ch}.${v.v}`,
     reflection ? `\n${reflection}` : "",
     "",
-    `Gita Reflection · ${verseLink(verseId)}`
+    `${t("Gita Reflection")} · ${verseLink(verseId)}`
   ].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
 }
 
@@ -229,17 +233,17 @@ export async function openShare({ verseId, reflection }) {
   const text = shareText(verseId, reflection);
   const filename = `gita-reflection-${v.ch}-${v.v}.png`;
   const { el, close } = openModal({
-    title: "Share this moment",
+    title: t("Share this moment"),
     className: "share-modal",
     body: `
-      <div class="share-preview"><div class="skeleton card-skeleton" aria-label="Preparing your card"></div></div>
+      <div class="share-preview"><div class="skeleton card-skeleton" aria-label="${t("Preparing your card")}"></div></div>
       <div class="share-actions">
         <button class="share-opt" data-act="instagram" type="button">${icon("instagram")}<span>Instagram</span></button>
         <button class="share-opt" data-act="whatsapp" type="button">${icon("whatsapp")}<span>WhatsApp</span></button>
-        <button class="share-opt" data-act="copy" type="button">${icon("copy")}<span>Copy text</span></button>
-        <button class="share-opt" data-act="download" type="button">${icon("download")}<span>Download image</span></button>
+        <button class="share-opt" data-act="copy" type="button">${icon("copy")}<span>${t("Copy text")}</span></button>
+        <button class="share-opt" data-act="download" type="button">${icon("download")}<span>${t("Download image")}</span></button>
       </div>
-      <p class="fine center">Cards show the simple meaning (our interpretation) alongside the verse reference.</p>`
+      <p class="fine center">${t("Cards show the simple meaning (our interpretation) alongside the verse reference.")}</p>`
   });
 
   let blob = null;
@@ -248,11 +252,11 @@ export async function openShare({ verseId, reflection }) {
     blob = await toBlob(canvas);
     const url = URL.createObjectURL(blob);
     const preview = el.querySelector(".share-preview");
-    if (preview) preview.innerHTML = `<img src="${url}" alt="Share card: ${esc(v.meaning)} — Bhagavad Gita ${v.ch}.${v.v}" width="540" height="675">`;
+    if (preview) preview.innerHTML = `<img src="${url}" alt="${t("Share card")}: ${esc(pick(v, "meaning"))} — ${t("Bhagavad Gita")} ${v.ch}.${v.v}" width="540" height="675">`;
   } catch (e) {
     console.error(e);
     const preview = el.querySelector(".share-preview");
-    if (preview) preview.innerHTML = `<p class="muted center">We couldn't prepare the image, but you can still copy the text.</p>`;
+    if (preview) preview.innerHTML = `<p class="muted center">${t("We couldn't prepare the image, but you can still copy the text.")}</p>`;
   }
 
   el.querySelector(".share-actions").addEventListener("click", async e => {
@@ -261,15 +265,15 @@ export async function openShare({ verseId, reflection }) {
     const act = btn.dataset.act;
     if (act === "copy") return copyText(text);
     if (act === "whatsapp") return window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
-    if (!blob) return toast("The image is still being prepared.");
-    if (act === "download") { downloadBlob(blob, filename); return toast("Image saved."); }
+    if (!blob) return toast(t("The image is still being prepared."));
+    if (act === "download") { downloadBlob(blob, filename); return toast(t("Image saved.")); }
     if (act === "instagram") {
       const file = new File([blob], filename, { type: "image/png" });
       if (navigator.canShare?.({ files: [file] })) {
         try { await navigator.share({ files: [file], text }); close(); } catch { /* cancelled */ }
       } else {
         downloadBlob(blob, filename);
-        toast("Image saved — add it to your Instagram story or post.");
+        toast(t("Image saved — add it to your Instagram story or post."));
       }
     }
   });

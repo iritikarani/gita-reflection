@@ -4,6 +4,7 @@ import { verseBlock, saveWithPrompt, saveVerseButton, bindSaveVerse } from "../c
 import { session } from "../store.js";
 import { openShare, downloadBlob } from "../share.js";
 import { openBreathe } from "./breathe.js";
+import { t, pick } from "../i18n.js";
 
 // A gentle daily calendar reminder, without any streak or guilt language.
 export function downloadReminder() {
@@ -22,8 +23,8 @@ export function downloadReminder() {
     `DTSTART:${start}`,
     "DURATION:PT5M",
     "RRULE:FREQ=DAILY",
-    "SUMMARY:Take a moment for yourself.",
-    `DESCRIPTION:A quiet moment with today's Gita. ${url}`,
+    `SUMMARY:${t("Take a moment for yourself.")}`,
+    `DESCRIPTION:${t("A quiet moment with today's Gita.")} ${url}`,
     `URL:${url}`,
     "END:VEVENT", "END:VCALENDAR"
   ].join("\r\n");
@@ -39,47 +40,47 @@ export function render(root) {
   <article class="daily">
     <header class="wrap narrow page-head center">
       <p class="eyebrow">${esc(formatDate(Date.now(), { weekday: "long", day: "numeric", month: "long" }))}</p>
-      <h1>Daily Gita</h1>
-      <p class="lead">One teaching for today. Read slowly; there's no hurry.</p>
+      <h1>${t("Daily Gita")}</h1>
+      <p class="lead">${t("One teaching for today. Read slowly; there's no hurry.")}</p>
     </header>
 
     <section class="wrap narrow" aria-labelledby="today-shlok">
-      <h2 id="today-shlok" class="section-label">Today's shlok</h2>
+      <h2 id="today-shlok" class="section-label">${t("Today's shlok")}</h2>
       ${verseBlock(v, { meaning: false })}
     </section>
 
     <section class="wrap narrow" aria-labelledby="today-meaning">
       ${divider()}
-      <h2 id="today-meaning" class="section-label">Today's meaning <span class="tag-interp">Interpretation</span></h2>
-      <p class="why-text">${esc(v.meaning)}</p>
-      <details class="context"><summary>About this verse</summary><p>${esc(v.context)}</p></details>
+      <h2 id="today-meaning" class="section-label">${t("Today's meaning")} <span class="tag-interp">${t("Interpretation")}</span></h2>
+      <p class="why-text">${esc(pick(v, "meaning"))}</p>
+      <details class="context"><summary>${t("About this verse")}</summary><p>${esc(pick(v, "context"))}</p></details>
     </section>
 
     <section class="wrap narrow moment" aria-labelledby="today-q">
-      <h2 id="today-q" class="section-label">Today's reflection</h2>
-      <p class="question">${esc(v.question)}</p>
-      <label class="sr-only" for="daily-text">Your reflection</label>
-      <textarea id="daily-text" class="journal" rows="3" placeholder="A few words are enough…">${esc(draft)}</textarea>
+      <h2 id="today-q" class="section-label">${t("Today's reflection")}</h2>
+      <p class="question">${esc(pick(v, "question"))}</p>
+      <label class="sr-only" for="daily-text">${t("Your reflection")}</label>
+      <textarea id="daily-text" class="journal" rows="3" placeholder="${t("A few words are enough…")}">${esc(draft)}</textarea>
     </section>
 
     <section class="wrap narrow" aria-labelledby="today-practice">
       <div class="practice">
-        <h2 id="today-practice" class="section-label">Today's small practice</h2>
-        <p>${esc(v.practice)}</p>
+        <h2 id="today-practice" class="section-label">${t("Today's small practice")}</h2>
+        <p>${esc(pick(v, "practice"))}</p>
       </div>
       <div class="actions">
-        <button class="btn btn-primary" type="button" data-act="save">${icon("bookmark")}<span>Save</span></button>
-        <button class="btn btn-ghost" type="button" data-act="reflect">${icon("breath")}<span>Reflect for 2 minutes</span></button>
-        <button class="btn btn-ghost" type="button" data-act="share">${icon("share")}<span>Share</span></button>
-        ${saveVerseButton(v.id).replace("<span>Save</span>", "<span>Save verse</span>")}
+        <button class="btn btn-primary" type="button" data-act="save">${icon("bookmark")}<span>${t("Save")}</span></button>
+        <button class="btn btn-ghost" type="button" data-act="reflect">${icon("breath")}<span>${t("Reflect for 2 minutes")}</span></button>
+        <button class="btn btn-ghost" type="button" data-act="share">${icon("share")}<span>${t("Share")}</span></button>
+        ${saveVerseButton(v.id, { label: "Save verse" })}
       </div>
     </section>
 
     <section class="wrap narrow center come-back">
       ${divider()}
-      <p class="statement small">Come back tomorrow for another moment of reflection.</p>
-      <button class="btn btn-link" type="button" data-act="remind">${icon("bell")}<span>Add a gentle daily reminder to my calendar</span></button>
-      <p class="fine">It simply says, “Take a moment for yourself.” You can remove it anytime.</p>
+      <p class="statement small">${t("Come back tomorrow for another moment of reflection.")}</p>
+      <button class="btn btn-link" type="button" data-act="remind">${icon("bell")}<span>${t("Add a gentle daily reminder to my calendar")}</span></button>
+      <p class="fine">${t("It simply says, “Take a moment for yourself.” You can remove it anytime.")}</p>
     </section>
   </article>`;
 
@@ -95,13 +96,13 @@ export function render(root) {
     if (act === "save") {
       const saved = saveWithPrompt({
         id: session.get(`${key}.id`) || undefined,
-        source: "daily", said: "Daily Gita", emotion: null, group: groupForVerse(v),
-        verseId: v.id, question: v.question, text: ta.value.trim()
+        source: "daily", said: t("Daily Gita"), emotion: null, group: groupForVerse(v),
+        verseId: v.id, question: pick(v, "question"), text: ta.value.trim()
       });
       if (saved) session.set(`${key}.id`, saved.id);
     }
-    if (act === "reflect") openBreathe({ verseId: v.id, question: v.question });
-    if (act === "share") openShare({ verseId: v.id, reflection: v.question });
+    if (act === "reflect") openBreathe({ verseId: v.id, question: pick(v, "question") });
+    if (act === "share") openShare({ verseId: v.id, reflection: pick(v, "question") });
     if (act === "remind") downloadReminder();
   });
 }

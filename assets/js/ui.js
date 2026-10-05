@@ -1,4 +1,5 @@
 // Small UI helpers shared by every view.
+import { t, locale } from "./i18n.js";
 
 export function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -90,14 +91,14 @@ export function toast(message) {
 const openModals = new Set();
 export function closeAllModals() { [...openModals].forEach(close => close({ restoreFocus: false })); }
 
-export function openModal({ title, body, className = "", onOpen, labelledBy }) {
+export function openModal({ title, body, className = "", onOpen, labelledBy, closeLabel }) {
   const previous = document.activeElement;
   const wrap = document.createElement("div");
   wrap.className = "modal-backdrop";
   const titleId = labelledBy || `modal-title-${Date.now()}`;
   wrap.innerHTML = `
     <div class="modal ${className}" role="dialog" aria-modal="true" aria-labelledby="${titleId}">
-      <button class="icon-btn modal-close" type="button" aria-label="Close">${icon("close")}</button>
+      <button class="icon-btn modal-close" type="button" aria-label="${esc(closeLabel || t("Close"))}">${icon("close")}</button>
       ${title ? `<h2 class="modal-title" id="${titleId}">${esc(title)}</h2>` : ""}
       <div class="modal-body">${body}</div>
     </div>`;
@@ -147,7 +148,7 @@ export function openModal({ title, body, className = "", onOpen, labelledBy }) {
 }
 
 export function formatDate(ts, opts = { day: "numeric", month: "short", year: "numeric" }) {
-  try { return new Date(ts).toLocaleDateString("en-IN", opts); }
+  try { return new Date(ts).toLocaleDateString(locale(), opts); }
   catch { return new Date(ts).toDateString(); }
 }
 

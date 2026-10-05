@@ -10,3 +10,5 @@ Interpretive text was drafted with AI assistance and should be reviewed by someo
 Language rules: never diagnose ("You are anxious"), never claim the Gita treats anxiety, depression or trauma. Use "This teaching may offer another way to look at…", "This verse invites you to consider…". Patterns describe themes of reflection, never the person. No streaks, guilt or pressure.
 
 Crisis: `isCrisis()` in `assets/js/data/emotions.js` checks English, Hinglish and Hindi phrases. On a match (home, conversation) the site shows crisis support instead of a verse. India's Tele-MANAS: 14416 / 1800-89-14416, 24×7. Emergency: 112. Outside India: findahelpline.com. Extend the patterns as you learn how people write; err on the side of care.
+
+Hindi: all interpretive text and interface copy also exists in Hindi (written with AI assistance, gender-neutral where Hindi allows). Please have a native Hindi speaker review `assets/js/data/hi.js`, `assets/js/data/verses-hi.js` and the Hindi blocks in `emotions.js` and `journey.js`, especially tone and naturalness. The Hindi Privacy and Terms pages note that the English versions prevail.

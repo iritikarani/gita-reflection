@@ -23,8 +23,8 @@
   --focus: #7A5C28;
   --shadow: 0 1px 2px rgba(51, 40, 31, .04), 0 8px 30px rgba(51, 40, 31, .05);
 
-  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
-  --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Cormorant Garamond", "Noto Serif Devanagari", "Iowan Old Style", Georgia, serif;
+  --sans: "DM Sans", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif;
   --deva: "Noto Serif Devanagari", "Noto Sans Devanagari", serif;
 
   --radius: 18px;
@@ -475,7 +475,7 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
 /* ---------- Empty / loading ---------- */
 .empty { text-align: center; padding: 48px 20px; max-width: 520px; margin: 0 auto; }
-.empty h3 { font-size: 1.6rem; }
+.empty h3, .empty .empty-title { font-size: 1.6rem; }
 .empty p { color: var(--muted); }
 .empty-orb { width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--gold) 35%, transparent), transparent 70%); animation: breathe-slow 9s ease-in-out infinite; }
 .loading-line { display: inline-flex; gap: 12px; align-items: center; color: var(--muted); margin-top: 12px; }
@@ -742,3 +742,37 @@ body.modal-open { overflow: hidden; }
   .ask textarea { min-height: 52px; }
   .feelings { margin-top: 32px; }
 }
+
+/* ---------- Language switch ---------- */
+.lang-btn {
+  min-width: 44px; height: 44px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--ink-2);
+  font: 500 .92rem var(--sans); transition: background .4s var(--ease), border-color .4s;
+}
+.lang-btn:hover { background: var(--bg-2); border-color: var(--gold); color: var(--ink); }
+.lang-btn[lang="hi"] { font-family: "Noto Sans Devanagari", var(--sans); font-size: 1rem; }
+
+/* ---------- हिन्दी typography ----------
+   Devanagari needs more vertical room, and letter-spacing / uppercase styling
+   breaks its conjuncts, so those are relaxed when the interface is in Hindi. */
+:root[lang="hi"] body { line-height: 1.8; }
+:root[lang="hi"] h1, :root[lang="hi"] h2, :root[lang="hi"] h3 { line-height: 1.4; letter-spacing: 0; }
+:root[lang="hi"] .hero-title { font-size: clamp(2.2rem, 7vw, 3.8rem); }
+:root[lang="hi"] .eyebrow, :root[lang="hi"] .section-label, :root[lang="hi"] .layer-label,
+:root[lang="hi"] .footer-heading, :root[lang="hi"] .verse-ref, :root[lang="hi"] .seven-day,
+:root[lang="hi"] .program-days, :root[lang="hi"] .daily-practice strong, :root[lang="hi"] .entry-emotion,
+:root[lang="hi"] .card-mock-label, :root[lang="hi"] .tag-interp, :root[lang="hi"] .verse-card-ref {
+  letter-spacing: 0; text-transform: none;
+}
+:root[lang="hi"] .eyebrow, :root[lang="hi"] .section-label, :root[lang="hi"] .layer-label, :root[lang="hi"] .footer-heading { font-size: .92rem; }
+:root[lang="hi"] .why-text, :root[lang="hi"] .question, :root[lang="hi"] .translation,
+:root[lang="hi"] .you-said blockquote, :root[lang="hi"] .statement, :root[lang="hi"] .pattern-text,
+:root[lang="hi"] .daily-meaning, :root[lang="hi"] .verse-card-meaning, :root[lang="hi"] .unknown-title,
+:root[lang="hi"] .msg .ack, :root[lang="hi"] .teach-en { line-height: 1.7; }
+:root[lang="hi"] .why-text, :root[lang="hi"] .question { font-size: clamp(1.15rem, 2.6vw, 1.35rem); }
+:root[lang="hi"] .statement { font-size: clamp(1.3rem, 2.8vw, 1.7rem); }
+:root[lang="hi"] .unknown-btn { font-size: 1.05rem; }
+:root[lang="hi"] .breath-phase { font-size: 1.5rem; }
+/* Journals and inputs: Devanagari, English or Hinglish all render comfortably */
+.journal, .ask textarea, .composer textarea, .search input, .field input { font-feature-settings: normal; }
+.journal:lang(hi), :root[lang="hi"] .journal, :root[lang="hi"] .ask textarea { line-height: 1.8; }

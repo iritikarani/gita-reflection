@@ -14,6 +14,8 @@
 //   cats     Library categories
 //   tags     Fine-grained tags used for matching feelings to verses
 
+import { VERSES_HI, CATEGORIES_HI } from "./verses-hi.js";
+
 export const CATEGORIES = [
   { id: "peace", label: "Peace", blurb: "Steadiness when the world is loud." },
   { id: "fear", label: "Fear", blurb: "Meeting what frightens you." },
@@ -771,7 +773,7 @@ export const VERSES = [
     tr: "sarva-dharmān parityajya mām ekaṁ śaraṇaṁ vraja\nahaṁ tvā sarva-pāpebhyo mokṣayiṣyāmi mā śucaḥ",
     en: "Setting aside all other duties, take refuge in me alone. I will free you from all wrongs — do not grieve.",
     hi: "सब धर्मों को छोड़कर केवल मेरी शरण में आओ। मैं तुम्हें सब पापों से मुक्त कर दूँगा — शोक मत करो।",
-    meaning: "\"Mā śucaḥ\" — do not grieve. When everything feels too much, there is a place to rest.",
+    meaning: "‘Mā śucaḥ’ — do not grieve. When everything feels too much, there is a place to rest.",
     context: "Often called the culmination of the Gita's teaching. Its final words, 'mā śucaḥ' — do not grieve — are among the most comforting in the text.",
     helps: "When you feel overwhelmed by everything you're supposed to do, or by guilt and worry.",
     invite: "This verse invites you to consider that you're allowed to rest — that you don't have to hold everything together alone.",
@@ -826,6 +828,10 @@ export const VERSES = [
     tags: ["worth", "insignificant", "small", "belonging", "empty", "self-doubt"]
   }
 ];
+
+// Attach Hindi interpretive text (used by i18n's pick()).
+for (const v of VERSES) v.hiText = VERSES_HI[v.id];
+for (const c of CATEGORIES) c.hiText = CATEGORIES_HI[c.id];
 
 export const VERSE_BY_ID = Object.fromEntries(VERSES.map(v => [v.id, v]));
 

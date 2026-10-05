@@ -2,6 +2,7 @@
 // Runs entirely in the browser: nothing the user types is sent anywhere.
 import { VERSES, VERSE_BY_ID, CATEGORIES } from "./data/verses.js";
 import { EMOTIONS, CATEGORY_GROUP, detectEmotions } from "./data/emotions.js";
+import { pick } from "./i18n.js";
 
 function hash(str) {
   let h = 2166136261;
@@ -39,9 +40,6 @@ export function rankVerses({ text = "", emotion = null }) {
   return { emotion: primary, detected, ranked };
 }
 
-function pick(list, seed) {
-  return list[seed % list.length];
-}
 
 // Build a complete reflection: verse + why + one question.
 export function buildReflection({ text = "", emotion = null, exclude = [] }) {
@@ -50,16 +48,28 @@ export function buildReflection({ text = "", emotion = null, exclude = [] }) {
   const e = EMOTIONS[key] || EMOTIONS.general;
   const seed = hash(`${text}${verse.id}`);
   // Prefer the emotion's question; alternate with the verse's own question for variety.
-  const question = (exclude.length % 2 === 1) ? verse.question : pick(e.questions, seed);
+  const qref = (exclude.length % 2 === 1) ? { k: "verse" } : { k: "emotion", i: seed % e.questions.length };
+  const question = qref.k === "verse" ? pick(verse, "question") : pick(e, "questions")[qref.i];
   return {
-    said: text || e.said,
+    qref,
+    said: text || pick(e, "said"),
     emotion: key,
     verseId: verse.id,
-    why: `${e.bridge} ${verse.invite}`,
+    why: `${pick(e, "bridge")} ${pick(verse, "invite")}`,
     question,
     group: groupForVerse(verse, key),
     createdAt: Date.now()
   };
+}
+
+// Text of a reflection in the current language (it may have been created in the other one).
+export function localizeReflection(r) {
+  const e = EMOTIONS[r.emotion] || EMOTIONS.general;
+  const verse = VERSE_BY_ID[r.verseId];
+  if (!verse) return r;
+  const question = r.qref?.k === "emotion" ? pick(e, "questions")[r.qref.i] : r.qref?.k === "verse" ? pick(verse, "question") : r.question;
+  const said = r.input?.text ? r.said : (r.input?.emotion ? pick(EMOTIONS[r.input.emotion], "said") : r.said);
+  return { ...r, why: `${pick(e, "bridge")} ${pick(verse, "invite")}`, question, said };
 }
 
 export function groupForVerse(verse, emotionKey) {
@@ -98,12 +108,13 @@ export function searchVerses(query, category) {
 
   const detected = detectEmotions(q);
   const emoTags = detected.flatMap(k => EMOTIONS[k]?.tags || []);
-  const catHit = CATEGORIES.filter(c => c.label.toLowerCase().includes(q) || c.id.includes(q)).map(c => c.id);
+  const catHit = CATEGORIES.filter(c => c.label.toLowerCase().includes(q) || c.id.includes(q) || (c.hiText && c.hiText.label.includes(q))).map(c => c.id);
   const words = q.split(/\s+/).filter(w => w.length > 1);
 
   const scored = list.map(v => {
     let s = 0;
-    const hay = `${v.en} ${v.meaning} ${v.helps} ${v.tags.join(" ")} ${v.cats.join(" ")} ${v.tr}`.toLowerCase();
+    const h = v.hiText || {};
+    const hay = `${v.en} ${v.meaning} ${v.helps} ${v.tags.join(" ")} ${v.cats.join(" ")} ${v.tr} ${v.hi} ${h.meaning || ""} ${h.helps || ""}`.toLowerCase();
     for (const w of words) if (hay.includes(w)) s += 2;
     for (const t of emoTags) if (v.tags.includes(t)) s += 1;
     for (const c of catHit) if (v.cats.includes(c)) s += 3;

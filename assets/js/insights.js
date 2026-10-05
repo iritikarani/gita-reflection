@@ -1,5 +1,6 @@
 // Gentle, non-diagnostic patterns from saved reflections.
 import { GROUPS } from "./data/emotions.js";
+import { t, pick, locale } from "./i18n.js";
 
 export function groupCounts(reflections) {
   const counts = {};
@@ -13,13 +14,14 @@ export function patternSentence(reflections) {
   const recent = reflections.slice(0, 12);
   if (recent.length < 3) return null;
   const top = groupCounts(recent).filter(([, n]) => n >= 2).slice(0, 2)
-    .map(([id]) => GROUPS.find(g => g.id === id)?.pattern).filter(Boolean);
-  if (!top.length) return "Your recent reflections have touched many different themes.";
-  return `Your recent reflections have often been around ${top.join(" and ")}.`;
+    .map(([id]) => pick(GROUPS.find(g => g.id === id), "pattern")).filter(Boolean);
+  if (!top.length) return t("Your recent reflections have touched many different themes.");
+  return t("Your recent reflections have often been around {themes}.", { themes: top.join(t(" and ")) });
 }
 
 const STOP = new Set(("a about above after again all am an and any are as at be because been before being below between both but by can could did do does doing down during each few for from further had has have having he her here hers herself him himself his how i if in into is it its itself just me more most my myself no nor not now of off on once only or other our ours out over own same she should so some such than that the their theirs them then there these they this those through to too under until up very was we were what when where which while who whom why will with would you your yours yourself im ive dont cant its it's i'm i've don't can't feel feeling really also maybe much many like get got one even still today thing things something want know think make way going " +
-  "है हैं था थी थे को का की के में से और भी पर यह वह मैं मुझे मेरा मेरी तो ही नहीं कि जो एक कर रहा रही हो गया गई").split(/\s+/));
+  "है हैं था थी थे को का की के में से और भी पर यह वह मैं मुझे मेरा मेरी तो ही नहीं कि जो एक कर रहा रही हो गया गई रहे हूँ हूं क्या कुछ बहुत अब जब तब सब लिए साथ बात" +
+  " hai hain tha thi the mai main mein mujhe mera meri mere ko ka ki ke se aur bhi par ye yeh wo woh nahi nhi kya kuch bahut raha rahi rahe ho hoon hu hun toh to bas abhi sab").split(/\s+/));
 
 export function frequentWords(reflections, limit = 12) {
   const counts = {};
@@ -40,5 +42,5 @@ export function monthKey(ts) {
 
 export function monthLabel(key) {
   const [y, m] = key.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+  return new Date(y, m - 1, 1).toLocaleDateString(locale(), { month: "long", year: "numeric" });
 }

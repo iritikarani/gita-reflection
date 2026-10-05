@@ -3,6 +3,7 @@ import { esc, icon, prefersReducedMotion } from "../ui.js";
 import { VERSE_BY_ID } from "../data/verses.js";
 import { startAmbience, stopAmbience, isPlaying } from "../sound.js";
 import { prefs } from "../store.js";
+import { t, pick } from "../i18n.js";
 
 const PHASES = [
   { label: "Breathe in", secs: 4, cls: "in" },
@@ -20,14 +21,14 @@ export function openBreathe({ verseId, question, seconds = 120 } = {}) {
   el.className = "breathe";
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-modal", "true");
-  el.setAttribute("aria-label", "Two-minute reflection");
+  el.setAttribute("aria-label", t("Two-minute reflection"));
   el.innerHTML = `
-    <button class="icon-btn breathe-close" type="button" aria-label="End reflection">${icon("close")}</button>
+    <button class="icon-btn breathe-close" type="button" aria-label="${t("End reflection")}">${icon("close")}</button>
     <div class="breathe-inner">
-      <p class="eyebrow">A two-minute pause</p>
+      <p class="eyebrow">${t("A two-minute pause")}</p>
       <div class="breath-orb ${prefersReducedMotion() ? "still" : ""}" aria-hidden="true"><span></span></div>
-      <p class="breath-phase" aria-live="polite">Settle in</p>
-      ${v ? `<p class="breathe-meaning">“${esc(v.meaning)}”</p><p class="fine">Bhagavad Gita ${v.ch}.${v.v}</p>` : ""}
+      <p class="breath-phase" aria-live="polite">${t("Settle in")}</p>
+      ${v ? `<p class="breathe-meaning">“${esc(pick(v, "meaning"))}”</p><p class="fine">${t("Bhagavad Gita")} ${v.ch}.${v.v}</p>` : ""}
       ${question ? `<p class="breathe-question">${esc(question)}</p>` : ""}
       <p class="breathe-time" aria-hidden="true"></p>
     </div>`;
@@ -56,7 +57,7 @@ export function openBreathe({ verseId, question, seconds = 120 } = {}) {
       phaseIndex = (phaseIndex + 1) % PHASES.length;
       const p = PHASES[phaseIndex];
       phaseLeft = p.secs;
-      phaseEl.textContent = p.label;
+      phaseEl.textContent = t(p.label);
       orb.classList.remove("in", "hold", "out");
       orb.classList.add(p.cls);
     }
@@ -67,8 +68,8 @@ export function openBreathe({ verseId, question, seconds = 120 } = {}) {
     finished = true;
     clearInterval(tick);
     orb.classList.remove("in", "hold", "out");
-    phaseEl.textContent = "Take this with you.";
-    timeEl.innerHTML = `<button class="btn btn-soft" type="button" data-close>Return gently</button>`;
+    phaseEl.textContent = t("Take this with you.");
+    timeEl.innerHTML = `<button class="btn btn-soft" type="button" data-close>${t("Return gently")}</button>`;
     timeEl.removeAttribute("aria-hidden");
     timeEl.querySelector("[data-close]").addEventListener("click", close);
     timeEl.querySelector("[data-close]").focus();

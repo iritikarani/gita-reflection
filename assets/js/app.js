@@ -3,6 +3,7 @@ import * as store from "./store.js";
 import { esc, toast, closeAllModals } from "./ui.js";
 import { startAmbience, stopAmbience } from "./sound.js";
 import { runPending } from "./components.js";
+import { t, lang, setLang, onLangChange, applyDocumentLang } from "./i18n.js";
 
 const ROUTES = [
   { path: "", view: "home", nav: "home", title: "" },
@@ -71,8 +72,8 @@ async function render() {
   closeAllModals();
 
   if (!route) {
-    main.innerHTML = `<section class="wrap narrow page-pad center"><h1 tabindex="-1">This page has drifted away</h1><p class="lead">The link may be old or mistyped.</p><a class="btn btn-primary" href="#/">Return home</a></section>`;
-    document.title = "Not found — Gita Reflection";
+    main.innerHTML = `<section class="wrap narrow page-pad center"><h1 tabindex="-1">${t("This page has drifted away")}</h1><p class="lead center">${t("The link may be old or mistyped.")}</p><a class="btn btn-primary" href="#/">${t("Return home")}</a></section>`;
+    document.title = `${t("Not found")} — ${t("Gita Reflection")}`;
     focusHeading(main);
     return;
   }
@@ -82,7 +83,7 @@ async function render() {
     mod = await loadView(route.view);
   } catch (e) {
     console.error(e);
-    main.innerHTML = `<section class="wrap narrow page-pad center"><h1 tabindex="-1">We couldn't open this page</h1><p class="lead">Please check your connection and try again.</p><button class="btn btn-primary" type="button" onclick="location.reload()">Try again</button></section>`;
+    main.innerHTML = `<section class="wrap narrow page-pad center"><h1 tabindex="-1">${t("We couldn't open this page")}</h1><p class="lead center">${t("Please check your connection and try again.")}</p><button class="btn btn-primary" type="button" onclick="location.reload()">${t("Try again")}</button></section>`;
     return;
   }
   if (token !== renderToken) return;
@@ -95,8 +96,8 @@ async function render() {
   main.classList.add("enter");
 
   const heading = main.querySelector("h1");
-  const pageTitle = route.title || "";
-  document.title = pageTitle ? `${heading?.dataset.title || pageTitle} — Gita Reflection` : "Gita Reflection — A calm place to pause and reflect";
+  const pageTitle = route.title ? t(route.title) : "";
+  document.title = pageTitle ? `${heading?.dataset.title || pageTitle} — ${t("Gita Reflection")}` : `${t("Gita Reflection")} — ${t("A calm place to pause and reflect")}`;
 
   window.scrollTo(0, 0);
   if (!firstRender) focusHeading(main);
@@ -117,20 +118,20 @@ function renderProfileMenu() {
   const initial = document.querySelector(".avatar-initial");
   profileBtn.classList.toggle("signed-in", Boolean(me));
   initial.textContent = me ? (me.name || me.email).trim().charAt(0).toUpperCase() : "";
-  profileBtn.setAttribute("aria-label", me ? `Account menu for ${me.name}` : "Account menu");
+  profileBtn.setAttribute("aria-label", me ? t("Account menu for {name}", { name: me.name }) : t("Account menu"));
   profilePop.innerHTML = me
     ? `<p class="pop-head"><strong>${esc(me.name)}</strong><span>${esc(me.email)}</span></p>
-       <a href="#/journey">My Journey</a>
-       <a href="#/seven-days">7-Day Journey</a>
-       <a href="#/summary">Monthly summary</a>
-       <a href="#/profile">Profile &amp; settings</a>
-       ${me.plan === "premium" ? "" : `<a href="#/premium">Go deeper with Premium</a>`}
-       <button type="button" data-logout>Log out</button>`
-    : `<p class="pop-head"><strong>Welcome</strong><span>No account needed to reflect.</span></p>
-       <a href="#/login">Log in</a>
-       <a href="#/signup">Create a free account</a>
-       <a href="#/seven-days">7-Day Journey</a>
-       <a href="#/premium">Premium</a>`;
+       <a href="#/journey">${t("My Journey")}</a>
+       <a href="#/seven-days">${t("7-Day Journey")}</a>
+       <a href="#/summary">${t("Monthly summary")}</a>
+       <a href="#/profile">${t("Profile & settings")}</a>
+       ${me.plan === "premium" ? "" : `<a href="#/premium">${t("Go deeper with Premium")}</a>`}
+       <button type="button" data-logout>${t("Log out")}</button>`
+    : `<p class="pop-head"><strong>${t("Welcome")}</strong><span>${t("No account needed to reflect.")}</span></p>
+       <a href="#/login">${t("Log in")}</a>
+       <a href="#/signup">${t("Create a free account")}</a>
+       <a href="#/seven-days">${t("7-Day Journey")}</a>
+       <a href="#/premium">${t("Premium")}</a>`;
 }
 
 function closeProfileMenu() {
@@ -148,7 +149,7 @@ profileBtn.addEventListener("click", e => {
 profilePop.addEventListener("click", e => {
   if (e.target.closest("[data-logout]")) {
     store.logOut().then(() => {
-      toast("You've logged out. Come back whenever you need a quiet moment.");
+      toast(t("You've logged out. Come back whenever you need a quiet moment."));
       navigate("/");
     });
   }
@@ -165,14 +166,14 @@ let soundOn = false;
 function setSound(on) {
   soundOn = on;
   soundBtn.setAttribute("aria-pressed", String(on));
-  soundBtn.setAttribute("aria-label", `Peaceful ambience: ${on ? "on" : "off"}`);
+  soundBtn.setAttribute("aria-label", on ? t("Peaceful ambience: on") : t("Peaceful ambience: off"));
   soundBtn.classList.toggle("on", on);
   if (on) startAmbience(); else stopAmbience();
 }
 soundBtn.addEventListener("click", () => {
   setSound(!soundOn);
   store.setPref("sound", soundOn);
-  toast(soundOn ? "Peaceful ambience on." : "Ambience off.");
+  toast(soundOn ? t("Peaceful ambience on.") : t("Ambience off."));
 });
 
 // ---- theme ----
@@ -192,7 +193,26 @@ export function afterAuth(next) {
 }
 
 document.getElementById("year").textContent = new Date().getFullYear();
-store.onError(message => toast(message));
+store.onError(message => toast(t(message)));
+
+// ---- language: English / हिन्दी ----
+const langBtn = document.getElementById("lang-toggle");
+function renderLangToggle() {
+  const hi = lang() === "hi";
+  langBtn.textContent = hi ? "EN" : "हिं";
+  langBtn.setAttribute("aria-label", hi ? "View in English" : "हिन्दी में देखें");
+  langBtn.setAttribute("lang", hi ? "en" : "hi");
+  langBtn.title = hi ? "English" : "हिन्दी";
+}
+langBtn.addEventListener("click", () => setLang(lang() === "hi" ? "en" : "hi"));
+onLangChange(() => {
+  renderLangToggle();
+  renderProfileMenu();
+  setSound(soundOn);
+  render();
+});
+applyDocumentLang();
+renderLangToggle();
 
 // Links from account emails arrive as "#access_token=…&type=recovery" (or an error).
 // Read them before the auth client consumes and clears the URL.
@@ -218,13 +238,13 @@ async function start() {
 
   if (link?.error_description || link?.error_code) {
     history.replaceState(null, "", location.pathname + location.search + "#/");
-    toast("That link has expired or was already used. Please try again.");
+    toast(t("That link has expired or was already used. Please try again."));
     render();
   } else if (link?.type === "recovery" && store.currentUser()) {
     navigate("/reset");
   } else if (link && store.currentUser()) {
     const saved = runPending({ quiet: true });
-    toast(saved ? "Your email is confirmed, and your reflection is saved." : "Your email is confirmed. Welcome to Gita Reflection.");
+    toast(saved ? t("Your email is confirmed, and your reflection is saved.") : t("Your email is confirmed. Welcome to Gita Reflection."));
     navigate("/journey");
   } else {
     render();
