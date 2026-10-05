@@ -245,6 +245,28 @@ await step("language choice is remembered after reload", async () => {
 await collectMissing(page);
 await ctx.close();
 
+// ---------- 3. Hindi guide pages ----------
+console.log("\nहिन्दी guide pages");
+await step("Hindi guides render, link to English, and open the app in Hindi", async () => {
+  const c = await newContext({ width: 360, height: 780 }, { locale: "en-GB" });
+  const p = await c.newPage();
+  for (const path of ["gita/hi/", "gita/hi/bhagavad-gita-for-anxiety/", "gita/hi/verse/2-47/"]) {
+    await p.goto(BASE + path);
+    const h1 = await p.locator("main h1").innerText();
+    if (!DEVANAGARI.test(h1)) throw new Error(`${path}: h1 "${h1}"`);
+    const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, en: document.querySelector('link[hreflang="en"]')?.href }));
+    if (m.sw > m.cw) throw new Error(`${path}: overflow`);
+    if (!m.en || /\/hi\//.test(m.en)) throw new Error(`${path}: missing English alternate`);
+    if (!(await p.locator(".lang-link").isVisible())) throw new Error(`${path}: language link hidden on phone`);
+  }
+  await p.goto(BASE + "gita/hi/bhagavad-gita-for-fear/");
+  await p.click(".static-cta .btn");
+  await p.waitForSelector(".you-said blockquote");
+  if (await p.evaluate(() => document.documentElement.lang) !== "hi") throw new Error("app did not open in Hindi");
+  if (/lang=/.test(p.url())) throw new Error("lang parameter left in the address");
+  await c.close();
+});
+
 // ---------- 3. English browsers still start in English ----------
 console.log("\nEnglish default");
 await step("an English browser starts in English with a हिं switch", async () => {

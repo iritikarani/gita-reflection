@@ -205,8 +205,11 @@ function renderLangToggle() {
   langBtn.title = hi ? "English" : "हिन्दी";
 }
 langBtn.addEventListener("click", () => setLang(lang() === "hi" ? "en" : "hi"));
+let started = false;
 onLangChange(() => {
+  updateGuidesLinks();
   renderLangToggle();
+  if (!started) return; // start() renders once accounts are ready
   renderProfileMenu();
   setSound(soundOn);
   render();
@@ -222,9 +225,24 @@ function readEmailLink() {
   return Object.fromEntries(new URLSearchParams(h));
 }
 
+// Links from the static guide pages carry ?lang=hi|en.
+function langFromLink() {
+  const m = location.hash.match(/[?&]lang=(en|hi)\b/);
+  if (!m) return;
+  setLang(m[1]);
+  history.replaceState(null, "", location.hash.replace(/([?&])lang=(en|hi)&?/, "$1").replace(/[?&]$/, "") || "#/");
+}
+
+function updateGuidesLinks() {
+  document.querySelectorAll('a[href="gita/"], a[href="gita/hi/"]').forEach(a => a.setAttribute("href", lang() === "hi" ? "gita/hi/" : "gita/"));
+}
+
 async function start() {
+  langFromLink();
+  updateGuidesLinks();
   const link = readEmailLink();
   await store.init();
+  started = true;
   renderProfileMenu();
   applyTheme();
   store.subscribe(({ event } = {}) => {
