@@ -67,7 +67,7 @@ const PAGES = {
       <li>We don't use analytics or tracking cookies.</li>
     </ul>
     <h2>Third parties</h2>
-    <p>Fonts are loaded from Google Fonts, which receives your IP address as part of a normal web request. If you look up a verse outside our curated library, the complete text is fetched from a public dataset hosted on GitHub Pages. ${remote() ? "Saved reflections and account details are processed by Supabase (supabase.com) on our behalf. " : ""}When you choose to share to WhatsApp, that service's own policy applies. If paid plans are introduced, payments will be handled by a payment provider under its own policy.</p>
+    <p>Fonts are loaded from Google Fonts, which receives your IP address as part of a normal web request. If you look up a verse outside our curated library, the complete text is fetched from a public dataset hosted on GitHub Pages. ${remote() ? "Saved reflections and account details are processed by Supabase (supabase.com) on our behalf. " : ""}When you choose to share to WhatsApp, that service's own policy applies. Payments for Premium are handled by Razorpay (razorpay.com) under its own privacy policy. We never see or store your card, UPI or bank details — we only keep whether your subscription is active and when it renews.</p>
     <h2>Your control</h2>
     <p>${remote()
       ? "From your Profile you can download all your data, or delete your account — which permanently deletes your account and every reflection from our database."
@@ -116,7 +116,7 @@ const PAGES = {
     <h1>Say hello</h1>
     <p class="lead">We'd love to hear how Gita Reflection could be a kinder, more useful space.</p>
     ${CONFIG.contactEmail
-      ? `<p>Write to us at <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a>. We read every message, though replies may take a few days.</p>`
+      ? `<p>For any query, write to us at <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a>. We read every message, though replies may take a few days.</p>`
       : `<p>A contact address is being set up. In the meantime, thank you for being here.</p>`}
     <div class="soft-card">
       <h2>If you need support right now</h2>
@@ -183,7 +183,7 @@ const PAGES_HI = {
       <li>हम एनालिटिक्स या ट्रैकिंग कुकीज़ का उपयोग नहीं करते।</li>
     </ul>
     <h2>तीसरे पक्ष</h2>
-    <p>फ़ॉन्ट Google Fonts से लोड होते हैं, जिसे सामान्य वेब अनुरोध के हिस्से के रूप में आपका IP पता मिलता है। अगर आप चुने हुए संग्रह से बाहर का कोई श्लोक देखते हैं, तो पूरा पाठ GitHub Pages पर होस्ट किए गए एक सार्वजनिक डेटासेट से लाया जाता है। ${remote() ? "सहेजे गए चिंतन और खाते का विवरण हमारी ओर से Supabase (supabase.com) द्वारा संसाधित होते हैं। " : ""}जब आप WhatsApp पर साझा करना चुनते हैं, तो उस सेवा की अपनी नीति लागू होती है। अगर भुगतान वाले प्लान आते हैं, तो भुगतान एक भुगतान प्रदाता द्वारा उसकी अपनी नीति के तहत संभाले जाएँगे।</p>
+    <p>फ़ॉन्ट Google Fonts से लोड होते हैं, जिसे सामान्य वेब अनुरोध के हिस्से के रूप में आपका IP पता मिलता है। अगर आप चुने हुए संग्रह से बाहर का कोई श्लोक देखते हैं, तो पूरा पाठ GitHub Pages पर होस्ट किए गए एक सार्वजनिक डेटासेट से लाया जाता है। ${remote() ? "सहेजे गए चिंतन और खाते का विवरण हमारी ओर से Supabase (supabase.com) द्वारा संसाधित होते हैं। " : ""}जब आप WhatsApp पर साझा करना चुनते हैं, तो उस सेवा की अपनी नीति लागू होती है। प्रीमियम के भुगतान Razorpay (razorpay.com) द्वारा उसकी अपनी गोपनीयता नीति के तहत संभाले जाते हैं। हम आपके कार्ड, UPI या बैंक का विवरण न कभी देखते हैं, न रखते हैं — हम केवल यह रखते हैं कि आपकी सदस्यता सक्रिय है या नहीं, और कब नवीनीकृत होगी।</p>
     <h2>आपका नियंत्रण</h2>
     <p>${remote()
       ? "अपनी प्रोफ़ाइल से आप अपना सारा डेटा डाउनलोड कर सकते हैं, या अपना खाता हटा सकते हैं — जिससे आपका खाता और हर चिंतन हमारे डेटाबेस से स्थायी रूप से मिट जाता है।"
@@ -235,7 +235,7 @@ const PAGES_HI = {
     <h1>नमस्ते कहिए</h1>
     <p class="lead">हमें जानकर ख़ुशी होगी कि गीता रिफ्लेक्शन को और कोमल, और उपयोगी जगह कैसे बनाया जा सकता है।</p>
     ${CONFIG.contactEmail
-      ? `<p>हमें <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a> पर लिखिए। हम हर संदेश पढ़ते हैं, हालाँकि जवाब में कुछ दिन लग सकते हैं।</p>`
+      ? `<p>किसी भी प्रश्न के लिए हमें <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a> पर लिखिए। हम हर संदेश पढ़ते हैं, हालाँकि जवाब में कुछ दिन लग सकते हैं।</p>`
       : `<p>संपर्क पता तैयार किया जा रहा है। तब तक, यहाँ होने के लिए धन्यवाद।</p>`}
     <div class="soft-card">
       <h2>अगर आपको अभी सहायता चाहिए</h2>

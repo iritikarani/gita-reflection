@@ -14,14 +14,20 @@ export const CONFIG = {
   },
 
   // Shown on the Contact page. Leave empty to hide the email address.
-  contactEmail: "",
+  contactEmail: "gitareflection@gmail.com",
 
   // Free plan limits
   freeSavedLimit: 50,
 
-  // Payment links (e.g. Razorpay Payment Pages or Stripe Payment Links).
-  // While empty, purchase buttons show "Coming soon" instead of a checkout.
+  // Payments. Premium uses Razorpay Subscriptions through the Supabase functions
+  // in supabase/functions (keys live in Supabase secrets, never here):
+  //   razorpay: ""     → Premium buttons show "Coming soon"
+  //   razorpay: "test" → checkout only for people who opened #/premium?paytest=1
+  //                      and whose email is in RAZORPAY_TEST_EMAILS
+  //   razorpay: "live" → checkout for everyone
+  // Product links (e.g. Razorpay Payment Pages) — while empty, buttons show "Coming soon".
   payments: {
+    razorpay: "test",
     premiumMonthly: "",
     premiumYearly: "",
     products: {
@@ -35,8 +41,8 @@ export const CONFIG = {
   },
 
   pricing: {
-    monthly: 149,
-    yearly: 1199
+    monthly: 49,
+    yearly: 499
   },
 
   // Optional: full 700-verse dataset used only when someone looks up a verse
