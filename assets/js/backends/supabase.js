@@ -81,7 +81,7 @@ export async function createSupabaseBackend({ url, anonKey }, { onAuthEvent } = 
   async function loadUser(sessionUser) {
     const id = sessionUser.id;
     const [profile, reflections, saved, journey, notes, programRows, collectionRows] = await Promise.all([
-      check(db.from("profiles").select("name, plan, journey_finished_at, created_at").eq("id", id).maybeSingle()),
+      check(db.from("profiles").select("*").eq("id", id).maybeSingle()), // "*" so older schemas without subscription columns still load
       check(db.from("reflections").select("*").order("created_at", { ascending: false })),
       check(db.from("saved_verses").select("verse_id, created_at").order("created_at", { ascending: false })),
       check(db.from("journey_entries").select("*")),
@@ -100,6 +100,7 @@ export async function createSupabaseBackend({ url, anonKey }, { onAuthEvent } = 
       id, email: sessionUser.email,
       name: profile?.name || sessionUser.user_metadata?.name || sessionUser.email.split("@")[0],
       plan: profile?.plan || "free",
+      subscription: profile?.subscription_status ? { status: profile.subscription_status, period: profile.subscription_period, renewsAt: ts(profile.renews_at) } : null,
       createdAt: ts(profile?.created_at || sessionUser.created_at)
     };
     const entries = {};
@@ -188,7 +189,34 @@ export async function createSupabaseBackend({ url, anonKey }, { onAuthEvent } = 
 
     async setPlan() { throw new Error("Plans are managed on the server."); },
 
+    // Calls a Supabase Edge Function (e.g. "razorpay") as the signed-in user.
+    async callFunction(name, body) {
+      const { data } = await auth.getSession();
+      if (!data.session) throw Object.assign(new Error("Please log in again."), { code: "not_signed_in" });
+      let res;
+      try {
+        res = await fetch(`${base}/functions/v1/${name}`, {
+          method: "POST",
+          headers: { apikey: anonKey, Authorization: `Bearer ${data.session.access_token}`, "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+      } catch { throw Object.assign(new Error("network"), { code: "network" }); }
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw Object.assign(new Error(out.error || `http_${res.status}`), { code: out.error || `http_${res.status}` });
+      return out;
+    },
+
+    async refresh() {
+      const { data } = await auth.getSession();
+      return data.session ? loadUser(data.session.user) : { user: null, data: null };
+    },
+
     async deleteAccount() {
+      // Stop any subscription first, so no one is charged after their account is gone.
+      if (["created", "authenticated", "active", "pending", "cancelling"].includes(me?.subscription?.status)) {
+        try { await this.callFunction("razorpay", { action: "cancel", immediately: true }); }
+        catch { throw new Error("We couldn't cancel your subscription just now, so your account wasn't deleted. Please try again in a moment."); }
+      }
       await check(db.rpc("delete_account"));
       me = null;
       await auth.signOut({ scope: "local" }).catch(() => {});

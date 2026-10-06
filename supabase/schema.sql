@@ -15,6 +15,22 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
+-- Subscription details, written only by the Razorpay functions (supabase/functions).
+alter table public.profiles add column if not exists subscription_id text;
+alter table public.profiles add column if not exists subscription_status text;
+alter table public.profiles add column if not exists subscription_period text;
+alter table public.profiles add column if not exists renews_at timestamptz;
+
+-- A private record of Razorpay webhook events (no one can read it from the website).
+create table if not exists public.payment_events (
+  id text primary key,
+  event text not null,
+  subscription_id text,
+  user_id uuid references auth.users (id) on delete set null,
+  payload jsonb,
+  received_at timestamptz not null default now()
+);
+
 -- ---------- Saved reflections ----------
 create table if not exists public.reflections (
   id uuid primary key default gen_random_uuid(),
@@ -88,6 +104,8 @@ alter table public.journey_entries enable row level security;
 alter table public.month_notes enable row level security;
 alter table public.program_entries enable row level security;
 alter table public.collections enable row level security;
+alter table public.payment_events enable row level security;
+revoke all on public.payment_events from anon, authenticated;
 
 drop policy if exists "own profile: read" on public.profiles;
 create policy "own profile: read" on public.profiles
@@ -96,7 +114,7 @@ drop policy if exists "own profile: update" on public.profiles;
 create policy "own profile: update" on public.profiles
   for update to authenticated using ((select auth.uid()) = id) with check ((select auth.uid()) = id);
 
--- People may change their name and journey date, but never their own plan.
+-- People may change their name and journey date, but never their own plan or subscription.
 revoke insert, update, delete on public.profiles from anon, authenticated;
 grant select on public.profiles to authenticated;
 grant update (name, journey_finished_at) on public.profiles to authenticated;
@@ -215,5 +233,5 @@ grant execute on function public.delete_account() to authenticated;
 revoke execute on function public.handle_new_user() from public, anon, authenticated;
 revoke execute on function public.enforce_free_limit() from public, anon, authenticated;
 
--- To give someone Premium (until payments are connected):
+-- Plans normally change through Razorpay (see SUPABASE.md). To give someone Premium by hand:
 --   update public.profiles set plan = 'premium' where id = (select id from auth.users where email = 'person@example.com');

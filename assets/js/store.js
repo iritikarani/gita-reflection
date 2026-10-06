@@ -187,6 +187,21 @@ export async function setPlan(plan) {
   emit();
 }
 
+// Server-side actions (Supabase Edge Functions), e.g. payments.
+export async function callFunction(name, body) {
+  if (!backend?.callFunction) throw Object.assign(new Error("unavailable"), { code: "unavailable" });
+  return backend.callFunction(name, body);
+}
+
+// Reload the account (after a payment, for example) without losing unsaved writes.
+export async function refreshAccount() {
+  if (!backend?.refresh) return me;
+  await flush();
+  const result = await backend.refresh();
+  if (result?.user) { setSession(result); emit(); }
+  return me;
+}
+
 export async function deleteAccount() {
   if (!me) return;
   await flush();

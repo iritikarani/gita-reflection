@@ -6,11 +6,12 @@ import { randomUUID } from "node:crypto";
 
 const b64 = obj => Buffer.from(JSON.stringify(obj)).toString("base64url");
 
-export function createMockSupabase({ url = "https://testproject.supabase.co", anonKey = "sb_publishable_test_0123456789abcdef", autoConfirm = true } = {}) {
+export function createMockSupabase({ url = "https://testproject.supabase.co", anonKey = "sb_publishable_test_0123456789abcdef", serviceKey = "sb_secret_test_0123456789abcdef", autoConfirm = true } = {}) {
   const users = new Map();      // id -> user
   const tokens = new Map();     // access token -> user id
   const refresh = new Map();    // refresh token -> user id
-  const tables = { profiles: [], reflections: [], saved_verses: [], journey_entries: [], month_notes: [], program_entries: [], collections: [] };
+  const tables = { profiles: [], reflections: [], saved_verses: [], journey_entries: [], month_notes: [], program_entries: [], collections: [], payment_events: [] };
+  const functions = {};         // name -> async (Request) => Response (Edge Functions)
   const log = [];
   const state = { autoConfirm };
 
@@ -32,7 +33,8 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
   function createUser({ email, password, data = {}, confirmed }) {
     const u = { id: randomUUID(), email, password, user_metadata: data, created_at: new Date().toISOString(), confirmed };
     users.set(u.id, u);
-    tables.profiles.push({ id: u.id, name: String(data.name || "").slice(0, 80), plan: "free", journey_finished_at: null, created_at: u.created_at });
+    tables.profiles.push({ id: u.id, name: String(data.name || "").slice(0, 80), plan: "free", journey_finished_at: null, created_at: u.created_at,
+      subscription_id: null, subscription_status: null, subscription_period: null, renews_at: null });
     return u;
   }
 
@@ -102,7 +104,25 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
     return authError(404, "not_found", `mock: unhandled auth ${method} ${path}`);
   }
 
+  // Service-role requests (from Edge Functions) bypass row-level security.
+  function handleAdmin(method, path, params, headers, body) {
+    const table = path.slice(1);
+    if (!tables[table]) return json(404, { message: `relation "${table}" does not exist` });
+    const filters = parseFilters(params);
+    if (method === "GET") return json(200, tables[table].filter(r => matches(r, filters)));
+    if (method === "PATCH") { tables[table].filter(r => matches(r, filters)).forEach(r => Object.assign(r, body)); return { status: 204, body: "" }; }
+    if (method === "POST") {
+      for (const row of [].concat(body)) {
+        if (table === "payment_events" && tables.payment_events.some(e => e.id === row.id)) continue;
+        tables[table].push({ ...row });
+      }
+      return { status: 201, body: "" };
+    }
+    return json(405, { message: "method not allowed" });
+  }
+
   function handleRest(method, path, params, headers, body) {
+    if (headers.apikey === serviceKey) return handleAdmin(method, path, params, headers, body);
     const uid = currentUserId(headers);
     if (path === "/rpc/delete_account") {
       if (!uid) return json(401, { message: "permission denied for function delete_account" });
@@ -168,6 +188,7 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
 
     if (method === "PATCH") {
       if (table === "collections" && tables.profiles.find(p => p.id === uid)?.plan !== "premium") return json(400, { code: "P0001", message: "premium_required" });
+      if (table === "payment_events") return json(401, { code: "42501", message: "permission denied for table payment_events" });
       if (table === "profiles" && Object.keys(body).some(k => !["name", "journey_finished_at"].includes(k))) {
         return json(403, { code: "42501", message: "permission denied for table profiles" });
       }
@@ -184,30 +205,38 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
     return json(405, { message: "method not allowed" });
   }
 
-  async function route(r) {
-    const req = r.request();
-    const u = new URL(req.url());
-    const headers = req.headers();
-    if (req.method() === "OPTIONS") return r.fulfill({ status: 204, headers: cors() });
-    if (headers.apikey !== anonKey) return r.fulfill({ ...json(401, { message: "Invalid API key" }), headers: cors() });
+  // headers: lower-case keys. Returns { status, body, contentType }.
+  async function handle({ method, url: href, headers, rawBody }) {
+    const u = new URL(href);
+    if (method === "OPTIONS") return { status: 204, body: "" };
+    if (u.pathname.startsWith("/functions/v1/")) {
+      const fn = functions[u.pathname.slice("/functions/v1/".length)];
+      if (!fn) return json(404, { message: "function not found" });
+      const res = await fn(new Request(href, { method, headers, body: method === "GET" ? undefined : rawBody }));
+      return { status: res.status, contentType: res.headers.get("content-type") || "application/json", body: await res.text() };
+    }
+    if (headers.apikey !== anonKey && headers.apikey !== serviceKey) return json(401, { message: "Invalid API key" });
     // Like Supabase's gateway: a non-JWT (publishable) key may appear as a Bearer token only if it equals the apikey header.
     const bearer = (headers.authorization || "").replace(/^Bearer\s+/i, "");
-    if (bearer && !bearer.includes(".") && bearer !== headers.apikey) {
-      return r.fulfill({ ...json(401, { message: "Invalid Authorization header" }), headers: cors() });
-    }
+    if (bearer && !bearer.includes(".") && bearer !== headers.apikey) return json(401, { message: "Invalid Authorization header" });
     let body = {};
-    try { body = req.postData() ? JSON.parse(req.postData()) : {}; } catch { body = {}; }
-    const res = u.pathname.startsWith("/auth/v1")
-      ? handleAuth(req.method(), u.pathname.slice("/auth/v1".length), u.searchParams, headers, body)
-      : handleRest(req.method(), u.pathname.slice("/rest/v1".length), u.searchParams, headers, body);
+    try { body = rawBody ? JSON.parse(rawBody) : {}; } catch { body = {}; }
+    return u.pathname.startsWith("/auth/v1")
+      ? handleAuth(method, u.pathname.slice("/auth/v1".length), u.searchParams, headers, body)
+      : handleRest(method, u.pathname.slice("/rest/v1".length), u.searchParams, headers, body);
+  }
+
+  async function route(r) {
+    const req = r.request();
+    const res = await handle({ method: req.method(), url: req.url(), headers: req.headers(), rawBody: req.postData() || "" });
     return r.fulfill({ ...res, headers: cors() });
   }
 
   const cors = () => ({ "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "*" });
 
   return {
-    url, anonKey, tables, log, state, users,
-    route,
+    url, anonKey, serviceKey, tables, log, state, users, functions,
+    route, handle,
     pattern: new RegExp(`^${url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/`),
     issueSessionFor(email) { return issueSession(findByEmail(email).id); },
     userByEmail: findByEmail,

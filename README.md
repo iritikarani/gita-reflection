@@ -26,6 +26,7 @@ npm run serve        # http://localhost:8080
 npm test             # Playwright smoke test (every route × 6 viewports + core flows)
 npm run test:supabase  # Supabase flows against a local mock of the Supabase API
 npm run test:hindi     # every page and the main flows in Hindi, plus untranslated-text check
+npm run test:payments  # Razorpay checkout, webhooks and cancelling, against fakes
 ```
 No build step for the app. After editing verse or guide content, regenerate the static pages:
 ```

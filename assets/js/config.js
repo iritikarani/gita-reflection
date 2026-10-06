@@ -19,9 +19,15 @@ export const CONFIG = {
   // Free plan limits
   freeSavedLimit: 50,
 
-  // Payment links (e.g. Razorpay Payment Pages or Stripe Payment Links).
-  // While empty, purchase buttons show "Coming soon" instead of a checkout.
+  // Payments. Premium uses Razorpay Subscriptions through the Supabase functions
+  // in supabase/functions (keys live in Supabase secrets, never here):
+  //   razorpay: ""     → Premium buttons show "Coming soon"
+  //   razorpay: "test" → checkout only for people who opened #/premium?paytest=1
+  //                      and whose email is in RAZORPAY_TEST_EMAILS
+  //   razorpay: "live" → checkout for everyone
+  // Product links (e.g. Razorpay Payment Pages) — while empty, buttons show "Coming soon".
   payments: {
+    razorpay: "test",
     premiumMonthly: "",
     premiumYearly: "",
     products: {

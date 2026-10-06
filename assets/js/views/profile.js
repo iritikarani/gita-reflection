@@ -4,6 +4,19 @@ import { premiumBadge } from "../components.js";
 import { downloadBlob } from "../share.js";
 import { downloadReminder } from "./daily.js";
 import { t, lang, setLang } from "../i18n.js";
+import { cancelSubscription, paymentMessage } from "../payments.js";
+
+function planDetails(me) {
+  const sub = me.subscription;
+  if (me.plan !== "premium" || !sub) return "";
+  const date = sub.renewsAt ? esc(formatDate(sub.renewsAt, { day: "numeric", month: "long", year: "numeric" })) : "";
+  const period = sub.period === "yearly" ? t("yearly") : t("monthly");
+  if (sub.status === "cancelling") return `<p class="muted">${date ? t("Your Premium continues until {date}, and won't renew.", { date }) : t("Your subscription won't renew.")}</p>`;
+  const note = sub.status === "pending"
+    ? `<p class="muted">${t("Your last renewal didn't go through. Razorpay will try again — please check your payment method.")}</p>`
+    : `<p class="muted">${date ? t("Renews on {date} ({period}).", { date, period }) : t("Renews automatically ({period}).", { period })}</p>`;
+  return `${note}<button class="btn btn-ghost btn-sm" type="button" data-cancel-sub>${t("Cancel subscription")}</button>`;
+}
 
 const THEMES = [
   { id: "ivory", label: "Ivory", desc: "Warm, light, calm", free: true },
@@ -48,7 +61,7 @@ export function render(root, { navigate }) {
     <div class="setting-card">
       <h2 class="section-label">${t("Plan")}</h2>
       <p>${premium ? t("Premium — thank you for supporting Gita Reflection.") : t("Free · {n} reflections saved. The essentials stay free, always.", { n: count })}</p>
-      ${premium ? "" : `<a class="btn btn-ghost btn-sm" href="#/premium">${t("Explore Premium")}</a>`}
+      ${premium ? planDetails(me) : `<a class="btn btn-ghost btn-sm" href="#/premium">${t("Explore Premium")}</a>`}
     </div>
 
     <div class="setting-card">
@@ -120,9 +133,26 @@ export function render(root, { navigate }) {
   root.querySelector("[data-export]").addEventListener("click", () =>
     downloadBlob(new Blob([store.exportData()], { type: "application/json" }), "gita-reflection-data.json"));
   root.querySelector("[data-logout]").addEventListener("click", async () => { await store.logOut(); toast(t("You've logged out.")); navigate("/"); });
+  root.querySelector("[data-cancel-sub]")?.addEventListener("click", () => {
+    const until = me.subscription?.renewsAt ? esc(formatDate(me.subscription.renewsAt, { day: "numeric", month: "long", year: "numeric" })) : "";
+    openModal({
+      title: t("Cancel your subscription?"),
+      body: `<p>${until ? t("You'll keep Premium until {date}, and you won't be charged again.", { date: until }) : t("You won't be charged again.")} ${t("Nothing you've written will be lost.")}</p>
+        <div class="row-end"><button class="btn btn-ghost" type="button" data-no>${t("Keep Premium")}</button><button class="btn btn-danger" type="button" data-yes>${t("Cancel subscription")}</button></div>`,
+      onOpen: (el, close) => {
+        el.querySelector("[data-no]").addEventListener("click", close);
+        el.querySelector("[data-yes]").addEventListener("click", async e => {
+          e.currentTarget.disabled = true;
+          try { await cancelSubscription(); close(); toast(t("Your subscription has been cancelled.")); render(root, { navigate }); }
+          catch (err) { console.error(err); close(); toast(paymentMessage(err)); }
+        });
+      }
+    });
+  });
+
   root.querySelector("[data-delete]").addEventListener("click", () => openModal({
     title: t("Delete your account?"),
-    body: `<p>${store.backendMode() === "supabase" ? t("This permanently removes your account and every saved reflection. You may want to download your data first.") : t("This permanently removes your account and every saved reflection from this device. You may want to download your data first.")}</p>
+    body: `<p>${store.backendMode() === "supabase" ? t("This permanently removes your account and every saved reflection. You may want to download your data first.") + (premium && me.subscription ? " " + t("Your subscription will be cancelled too.") : "") : t("This permanently removes your account and every saved reflection from this device. You may want to download your data first.")}</p>
       <div class="row-end"><button class="btn btn-ghost" type="button" data-no>${t("Keep my account")}</button><button class="btn btn-danger" type="button" data-yes>${t("Delete everything")}</button></div>`,
     onOpen: (el, close) => {
       el.querySelector("[data-no]").addEventListener("click", close);

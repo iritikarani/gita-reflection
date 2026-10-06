@@ -1,7 +1,8 @@
-import { esc, icon, openModal } from "../ui.js";
+import { esc, icon, openModal, toast } from "../ui.js";
 import { CONFIG, PRODUCTS } from "../config.js";
 import * as store from "../store.js";
 import { t, pick } from "../i18n.js";
+import { checkoutAvailable, isTestMode, rememberTestMode, startSubscription, paymentMessage } from "../payments.js";
 
 const PRODUCTS_HI = {
   "journal-7": { title: "7 दिन की गीता चिंतन डायरी", format: "प्रिंट करने योग्य PDF", desc: "मार्गदर्शित प्रश्नों का एक कोमल सप्ताह, रोज़ एक श्लोक, हाथ से लिखने की जगह के साथ।" },
@@ -45,9 +46,40 @@ function buy(link, title) {
   });
 }
 
+async function checkout(root, button, period) {
+  const buttons = root.querySelectorAll("[data-buy]");
+  const label = button.textContent;
+  buttons.forEach(b => { b.disabled = true; });
+  button.textContent = t("Opening secure checkout…");
+  try {
+    const result = await startSubscription(period);
+    if (result === "premium") {
+      premiumView(root);
+      openModal({
+        title: t("Welcome to Premium"),
+        body: `<p>${t("Thank you for supporting Gita Reflection. Everything in Premium is open to you now.")}</p>
+          <div class="row-end"><a class="btn btn-primary" href="#/programs">${t("Explore guided programs")}</a></div>`
+      });
+      return;
+    }
+    if (result === "processing") {
+      openModal({
+        title: t("Payment received"),
+        body: `<p>${t("Your payment went through. Premium will appear on your account within a few minutes — Razorpay will also email you a receipt.")}</p>`
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    toast(paymentMessage(e));
+  }
+  buttons.forEach(b => { b.disabled = false; });
+  button.textContent = label;
+}
+
 function premiumView(root) {
   const me = store.currentUser();
   const premium = me?.plan === "premium";
+  const testing = checkoutAvailable() && isTestMode();
   root.innerHTML = `
   <section class="premium">
     <header class="wrap narrow page-head center">
@@ -69,7 +101,8 @@ function premiumView(root) {
         <p class="fine">${t("or ₹{yearly} / year — about ₹{perMonth} a month", { yearly: CONFIG.pricing.yearly.toLocaleString("en-IN"), perMonth: Math.round(CONFIG.pricing.yearly / 12) })}</p>
         <p class="muted">${t("Everything in Free, and:")}</p>
         <ul class="ticks">${PREMIUM.map(f => `<li>${icon("check")}<span>${esc(t(f))}</span></li>`).join("")}</ul>
-        ${premium ? `<p class="fine">${t("You're a Premium member. Thank you.")}</p>` : `
+        ${testing && !premium ? `<p class="notice-test" role="note">${t("Test mode: use Razorpay's test details. No real money is charged.")}</p>` : ""}
+        ${premium ? `<p class="fine">${t("You're a Premium member. Thank you.")} <a href="#/profile">${t("Manage subscription")}</a></p>` : `
         <div class="stack">
           <button class="btn btn-primary btn-block" type="button" data-buy="monthly">${t("Go deeper — monthly")}</button>
           <button class="btn btn-ghost btn-block" type="button" data-buy="yearly">${t("Yearly")}</button>
@@ -96,6 +129,7 @@ function premiumView(root) {
   root.querySelectorAll("[data-buy]").forEach(b => b.addEventListener("click", () => {
     if (!me) { location.hash = "#/signup?next=/premium"; return; }
     const yearly = b.dataset.buy === "yearly";
+    if (checkoutAvailable()) { checkout(root, b, yearly ? "yearly" : "monthly"); return; }
     buy(yearly ? CONFIG.payments.premiumYearly : CONFIG.payments.premiumMonthly, `${t("Premium")} (${yearly ? t("yearly") : t("monthly")})`);
   }));
 }
@@ -132,6 +166,7 @@ function shopView(root) {
   }));
 }
 
-export function render(root, { mode }) {
+export function render(root, { mode, query = {} }) {
+  rememberTestMode(query);
   return mode === "shop" ? shopView(root) : premiumView(root);
 }
