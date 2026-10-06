@@ -35,8 +35,8 @@ export const CONFIG = {
   },
 
   pricing: {
-    monthly: 149,
-    yearly: 1199
+    monthly: 49,
+    yearly: 499
   },
 
   // Optional: full 700-verse dataset used only when someone looks up a verse
