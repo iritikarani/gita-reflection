@@ -14,7 +14,7 @@ export const CONFIG = {
   },
 
   // Shown on the Contact page. Leave empty to hide the email address.
-  contactEmail: "",
+  contactEmail: "gitareflection@gmail.com",
 
   // Free plan limits
   freeSavedLimit: 50,

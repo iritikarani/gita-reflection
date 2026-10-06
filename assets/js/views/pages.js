@@ -116,7 +116,7 @@ const PAGES = {
     <h1>Say hello</h1>
     <p class="lead">We'd love to hear how Gita Reflection could be a kinder, more useful space.</p>
     ${CONFIG.contactEmail
-      ? `<p>Write to us at <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a>. We read every message, though replies may take a few days.</p>`
+      ? `<p>For any query, write to us at <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a>. We read every message, though replies may take a few days.</p>`
       : `<p>A contact address is being set up. In the meantime, thank you for being here.</p>`}
     <div class="soft-card">
       <h2>If you need support right now</h2>
@@ -235,7 +235,7 @@ const PAGES_HI = {
     <h1>नमस्ते कहिए</h1>
     <p class="lead">हमें जानकर ख़ुशी होगी कि गीता रिफ्लेक्शन को और कोमल, और उपयोगी जगह कैसे बनाया जा सकता है।</p>
     ${CONFIG.contactEmail
-      ? `<p>हमें <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a> पर लिखिए। हम हर संदेश पढ़ते हैं, हालाँकि जवाब में कुछ दिन लग सकते हैं।</p>`
+      ? `<p>किसी भी प्रश्न के लिए हमें <a href="mailto:${esc(CONFIG.contactEmail)}">${esc(CONFIG.contactEmail)}</a> पर लिखिए। हम हर संदेश पढ़ते हैं, हालाँकि जवाब में कुछ दिन लग सकते हैं।</p>`
       : `<p>संपर्क पता तैयार किया जा रहा है। तब तक, यहाँ होने के लिए धन्यवाद।</p>`}
     <div class="soft-card">
       <h2>अगर आपको अभी सहायता चाहिए</h2>
