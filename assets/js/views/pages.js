@@ -67,8 +67,7 @@ const PAGES = {
       <li>We don't use analytics or tracking cookies.</li>
     </ul>
     <h2>Third parties</h2>
-    <p>Fonts are loaded from Google Fonts, which receives your IP address as part of a normal web request. If you look up a verse outside our curated library, the complete text is fetched from a public dataset hosted on GitHub Pages. ${remote() ? "Saved reflections and account details are processed by Supabase (supabase.com) on our behalf. " : ""}When you choose to share to WhatsApp, that service's own policy applies. Payments for Premium are handled by Razorpay (razorpay.com) under its own privacy policy.
-    We never see or store your card, UPI or bank details — we only keep whether your subscription is active and when it renews.</p>
+    <p>Fonts are loaded from Google Fonts, which receives your IP address as part of a normal web request. If you look up a verse outside our curated library, the complete text is fetched from a public dataset hosted on GitHub Pages. ${remote() ? "Saved reflections and account details are processed by Supabase (supabase.com) on our behalf. " : ""}When you choose to share to WhatsApp, that service's own policy applies. Payments for Premium are handled by Razorpay (razorpay.com) under its own privacy policy. We never see or store your card, UPI or bank details — we only keep whether your subscription is active and when it renews.</p>
     <h2>Your control</h2>
     <p>${remote()
       ? "From your Profile you can download all your data, or delete your account — which permanently deletes your account and every reflection from our database."
@@ -217,4 +216,4 @@ const PAGES_HI = {
     <ul>
       <li>आप प्रीमियम कभी भी रद्द कर सकते हैं। जिस अवधि का भुगतान हो चुका है, उसके अंत तक प्रीमियम रहेगा, और आगे कोई शुल्क नहीं लगेगा।</li>
       <li>अगर ग़लती से शुल्क कट गया, या नवीनीकरण से पहले रद्द करना भूल गए, तो शुल्क के 7 दिनों के भीतर हमें लिखिए — हम पूरा पैसा लौटा देंगे।</li>
-      <li>आपके चिंतन हमेशा आपके हैं। प्रीमियम ख़त्म होने पर भी आपका लिखा कुछ नहीं मिटता; आप उसे पढ़ औ
+      <li>आपके चिंतन हमेशा आपके हैं। प्रीमियम ख़त्म होने पर भी आपका लिखा कुछ नहीं मिटता; आप उसे पढ़ और डा
