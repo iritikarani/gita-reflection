@@ -42,6 +42,37 @@ function sameText(a: string, b: string) {
 const iso = (unix?: number | null) => (unix ? new Date(unix * 1000).toISOString() : null);
 const ok = (note: string) => new Response(JSON.stringify({ ok: true, note }), { status: 200, headers: { "Content-Type": "application/json" } });
 
+// ---- Owner alerts (optional): emails you via Brevo when something changes ----
+// Secrets: NOTIFY_EMAIL (where alerts go), BREVO_API_KEY, NOTIFY_FROM (a sender verified in Brevo; defaults to NOTIFY_EMAIL).
+async function notifyOwner(subject: string, lines: string[]) {
+  const to = env("NOTIFY_EMAIL"), key = env("BREVO_API_KEY");
+  if (!to || !key) return;
+  try {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "api-key": key, "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        sender: { email: env("NOTIFY_FROM") || to, name: "Gita Reflection" },
+        to: [{ email: to }],
+        subject: `Gita Reflection: ${subject}`,
+        textContent: lines.filter(Boolean).join("\n")
+      })
+    });
+    if (!res.ok) console.error("alert email failed", res.status, await res.text());
+  } catch (e) { console.error("alert email failed", e); } // never block a payment on an alert
+}
+const day = (isoDate?: string | null) => (isoDate ? new Date(isoDate).toDateString() : "—");
+
+async function memberEmail(id: string) {
+  try {
+    const key = serviceKey();
+    const h: Record<string, string> = { apikey: key };
+    if (key.startsWith("eyJ")) h.Authorization = `Bearer ${key}`;
+    const res = await fetch(`${env("SUPABASE_URL")}/auth/v1/admin/users/${id}`, { headers: h });
+    return res.ok ? (await res.json()).email || "" : "";
+  } catch { return ""; }
+}
+
 const UPGRADE = ["subscription.activated", "subscription.charged", "subscription.resumed"];
 const ENDED = { "subscription.halted": "halted", "subscription.cancelled": "cancelled", "subscription.completed": "completed", "subscription.paused": "paused" } as Record<string, string>;
 
@@ -82,6 +113,23 @@ export async function handler(req: Request) {
     }
 
     if (changes) await db(`profiles?id=eq.${userId}`, { method: "PATCH", body: JSON.stringify(changes), headers: { Prefer: "return=minimal" } });
+
+    // Alert the owner about the moments that matter (renewals are quiet).
+    const wasPremium = profile.plan === "premium";
+    const alert =
+      event.event === "subscription.activated" && !wasPremium ? ["new Premium member", "Someone just became a Premium member."] :
+      event.event === "subscription.pending" && changes ? ["a renewal payment failed", "A renewal payment didn't go through. Razorpay will retry; the member keeps Premium meanwhile."] :
+      ENDED[event.event] && changes && wasPremium ? [`Premium ended (${ENDED[event.event]})`,
+        event.event === "subscription.halted" ? "Renewal payments kept failing, so Razorpay stopped the subscription. The member is back on Free."
+        : "A subscription has ended and the member is back on Free."] : null;
+    if (alert) {
+      await notifyOwner(alert[0], [
+        alert[1],
+        `Member: ${profile.name || "—"} <${await memberEmail(userId)}>`,
+        `Plan: ${sub.notes?.period || profile.subscription_period || "—"} · Subscription: ${sub.id}`,
+        event.event === "subscription.activated" ? `Renews on: ${day(iso(sub.current_end))}` : ""
+      ]);
+    }
     await db("payment_events", {
       method: "POST",
       headers: { Prefer: "resolution=ignore-duplicates,return=minimal" },

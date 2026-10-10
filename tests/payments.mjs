@@ -28,8 +28,12 @@ const SECRETS = {
   RAZORPAY_PLAN_MONTHLY: "plan_monthly49",
   RAZORPAY_PLAN_YEARLY: "plan_yearly499",
   RAZORPAY_WEBHOOK_SECRET: "webhook-secret-123",
-  RAZORPAY_TEST_EMAILS: "Asha@Example.com, someone@example.com"
+  RAZORPAY_TEST_EMAILS: "Asha@Example.com, someone@example.com",
+  NOTIFY_EMAIL: "owner@example.com",
+  BREVO_API_KEY: "xkeysib-test"
 };
+const alerts = []; // owner alert emails "sent" through the fake Brevo API
+const lastAlert = () => alerts.at(-1) || {};
 const sign = (secret, msg) => createHmac("sha256", secret).update(msg).digest("hex");
 
 // ---- fake Razorpay API ----
@@ -70,6 +74,11 @@ globalThis.fetch = async (input, init = {}) => {
   if (req.url.startsWith(mock.url)) {
     const res = await mock.handle({ method: req.method, url: req.url, headers, rawBody: raw });
     return new Response(res.status === 204 ? null : res.body, { status: res.status, headers: { "content-type": res.contentType || "application/json" } });
+  }
+  if (req.url === "https://api.brevo.com/v3/smtp/email") {
+    if (headers["api-key"] !== SECRETS.BREVO_API_KEY) return new Response("{}", { status: 401 });
+    alerts.push(JSON.parse(raw));
+    return new Response(JSON.stringify({ messageId: "m" + alerts.length }), { status: 201 });
   }
   if (req.url.startsWith(RZP)) {
     const [status, body] = razorpayApi(req.method, req.url.slice(RZP.length), headers, raw ? JSON.parse(raw) : {});
@@ -178,6 +187,9 @@ await step("Profile shows renewal date, and cancelling keeps Premium until then"
   const p = mock.profileFor("asha@example.com");
   assert(p.plan === "premium" && p.subscription_status === "cancelling", "should stay Premium until the period ends");
   assert(rzp.calls.at(-1).body.cancel_at_cycle_end === 1, "should cancel at cycle end");
+  const a = lastAlert();
+  assert(a.to?.[0]?.email === "owner@example.com" && /cancelled Premium/.test(a.subject), "owner not alerted about the cancellation: " + JSON.stringify(a));
+  assert(/asha@example\.com/.test(a.textContent) && /keep Premium until/.test(a.textContent), "alert missing member or end date");
 });
 
 await step("webhook: subscription.cancelled at period end → Free", async () => {
@@ -185,6 +197,7 @@ await step("webhook: subscription.cancelled at period end → Free", async () =>
   const res = await webhook("subscription.cancelled", { id: p.subscription_id, status: "cancelled", notes: { user_id: p.id } }, { id: "evt_c1" });
   assert(res.status === 200 && /updated/.test(res.body), "webhook failed: " + res.body);
   assert(p.plan === "free" && p.subscription_status === "cancelled", "not downgraded");
+  assert(/Premium ended \(cancelled\)/.test(lastAlert().subject) && /asha@example\.com/.test(lastAlert().textContent), "no 'Premium ended' alert");
   assert(mock.tables.payment_events.some(e => e.id === "evt_c1"), "event not recorded");
   const again = await webhook("subscription.cancelled", { id: p.subscription_id, status: "cancelled", notes: { user_id: p.id } }, { id: "evt_c1" });
   assert(/duplicate/.test(again.body), "duplicate not detected");
@@ -199,10 +212,15 @@ await step("webhook: a bad signature is rejected", async () => {
 await step("webhook: charged/pending/halted on the current subscription", async () => {
   const p = mock.profileFor("asha@example.com");
   const sub = { id: "sub_web", status: "active", current_end: Math.floor(Date.now() / 1000) + 365 * 86400, notes: { user_id: p.id, period: "yearly" } };
+  const before = alerts.length;
+  await webhook("subscription.activated", sub, { id: "evt_w0" });
+  assert(alerts.length === before + 1 && /new Premium member/.test(lastAlert().subject), "no new-member alert");
   await webhook("subscription.charged", sub, { id: "evt_w1" });
+  assert(alerts.length === before + 1, "a normal renewal should not send an alert");
   assert(p.plan === "premium" && p.subscription_id === "sub_web" && p.subscription_period === "yearly", "charged did not upgrade");
   await webhook("subscription.pending", sub, { id: "evt_w2" });
   assert(p.plan === "premium" && p.subscription_status === "pending", "pending should keep Premium");
+  assert(/renewal payment failed/.test(lastAlert().subject), "no failed-renewal alert");
   await webhook("subscription.halted", { ...sub, id: "sub_other" }, { id: "evt_w3" });
   assert(p.plan === "premium", "an old subscription's event must not downgrade");
   await webhook("subscription.halted", sub, { id: "evt_w4" });
@@ -250,6 +268,7 @@ await step("deleting an account cancels its subscription first", async () => {
   await until(() => !mock.userByEmail("asha@example.com"), "account not deleted");
   const cancel = rzp.calls.find(c => c.path === "/subscriptions/sub_del/cancel");
   assert(cancel && cancel.body.cancel_at_cycle_end === 0, "subscription not cancelled immediately");
+  assert(/deleted their account/.test(lastAlert().textContent), "no alert for the account-deletion cancel");
 });
 
 await step("an already-ended subscription doesn't block cancelling", async () => {

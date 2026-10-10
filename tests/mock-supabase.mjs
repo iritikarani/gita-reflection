@@ -60,6 +60,12 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
   const matches = (row, filters) => filters.every(([k, v]) => String(row[k]) === v);
 
   function handleAuth(method, path, params, headers, body) {
+    const admin = path.match(/^\/admin\/users\/([\w-]+)$/);
+    if (admin) {
+      if (headers.apikey !== serviceKey) return authError(403, "not_admin", "User not allowed");
+      const u = users.get(admin[1]);
+      return u ? json(200, publicUser(u)) : authError(404, "user_not_found", "User not found");
+    }
     if (path === "/signup" && method === "POST") {
       if (findByEmail(body.email)) return authError(422, "user_already_exists", "User already registered");
       if (state.emailFails) return authError(500, "unexpected_failure", "Error sending confirmation email");

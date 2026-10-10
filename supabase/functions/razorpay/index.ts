@@ -78,6 +78,27 @@ function sameText(a: string, b: string) {
 }
 const iso = (unix?: number | null) => (unix ? new Date(unix * 1000).toISOString() : null);
 
+// ---- Owner alerts (optional): emails you via Brevo when something changes ----
+// Secrets: NOTIFY_EMAIL (where alerts go), BREVO_API_KEY, NOTIFY_FROM (a sender verified in Brevo; defaults to NOTIFY_EMAIL).
+async function notifyOwner(subject: string, lines: string[]) {
+  const to = env("NOTIFY_EMAIL"), key = env("BREVO_API_KEY");
+  if (!to || !key) return;
+  try {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "api-key": key, "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        sender: { email: env("NOTIFY_FROM") || to, name: "Gita Reflection" },
+        to: [{ email: to }],
+        subject: `Gita Reflection: ${subject}`,
+        textContent: lines.filter(Boolean).join("\n")
+      })
+    });
+    if (!res.ok) console.error("alert email failed", res.status, await res.text());
+  } catch (e) { console.error("alert email failed", e); } // never block a payment on an alert
+}
+const day = (isoDate?: string | null) => (isoDate ? new Date(isoDate).toDateString() : "—");
+
 // Statuses in which Razorpay may still charge the member.
 const LIVE = ["created", "authenticated", "active", "pending", "cancelling"];
 const PAID = ["active", "pending", "cancelling"];
@@ -141,13 +162,25 @@ async function cancel(user: any, body: any) {
     if (!unpaid && (!current || ["created", "authenticated", "active", "pending", "halted", "paused"].includes(current.status))) throw e;
     sub = { ...current, status: "cancelled" };
   }
+  const who = `Member: ${profile.name || "—"} <${user.email}>`;
+  const plan = `Plan: ${profile.subscription_period || "—"} · Subscription: ${profile.subscription_id}`;
   if (immediately || sub.status === "cancelled") {
     await patchProfile(user.id, { plan: "free", subscription_status: "cancelled", renews_at: null });
+    if (PAID.includes(profile.subscription_status)) {
+      await notifyOwner("subscription cancelled", [
+        body.immediately ? "A member deleted their account, so their subscription was cancelled straight away." : "A subscription was cancelled straight away.",
+        who, plan, "No further payments will be taken."
+      ]);
+    }
     return reply(200, { status: "cancelled" });
   }
   // Premium continues until the end of the period already paid for.
   const until = iso(sub.current_end) || profile.renews_at;
   await patchProfile(user.id, { subscription_status: "cancelling", renews_at: until });
+  await notifyOwner("a member cancelled Premium", [
+    "A member cancelled their subscription from their Profile.",
+    who, plan, `They keep Premium until: ${day(until)}. No further payments will be taken.`
+  ]);
   return reply(200, { status: "cancelling", renewsAt: until });
 }
 

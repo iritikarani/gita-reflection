@@ -233,5 +233,17 @@ grant execute on function public.delete_account() to authenticated;
 revoke execute on function public.handle_new_user() from public, anon, authenticated;
 revoke execute on function public.enforce_free_limit() from public, anon, authenticated;
 
+-- ---------- Subscription overview (for you, in the Supabase dashboard) ----------
+-- Table Editor → subscription_overview, or SQL: select * from public.subscription_overview;
+-- Not readable from the website.
+create or replace view public.subscription_overview as
+  select u.email, p.name, p.plan, p.subscription_status as status, p.subscription_period as period,
+         p.renews_at as renews_or_ends_at, p.subscription_id, p.created_at as member_since
+  from public.profiles p
+  join auth.users u on u.id = p.id
+  where p.subscription_id is not null or p.plan = 'premium'
+  order by p.plan desc, p.renews_at nulls last;
+revoke all on public.subscription_overview from public, anon, authenticated;
+
 -- Plans normally change through Razorpay (see SUPABASE.md). To give someone Premium by hand:
 --   update public.profiles set plan = 'premium' where id = (select id from auth.users where email = 'person@example.com');

@@ -628,5 +628,6 @@ export const HI = {
   "Keep Premium": "प्रीमियम जारी रखें",
   "Your subscription has been cancelled.": "आपकी सदस्यता रद्द कर दी गई है।",
   "Your subscription will be cancelled too.": "आपकी सदस्यता भी रद्द हो जाएगी।",
-  "We couldn't cancel your subscription just now, so your account wasn't deleted. Please try again in a moment.": "अभी आपकी सदस्यता रद्द नहीं हो पाई, इसलिए आपका खाता नहीं हटाया गया। कृपया थोड़ी देर में फिर कोशिश करें।"
+  "We couldn't cancel your subscription just now, so your account wasn't deleted. Please try again in a moment.": "अभी आपकी सदस्यता रद्द नहीं हो पाई, इसलिए आपका खाता नहीं हटाया गया। कृपया थोड़ी देर में फिर कोशिश करें।",
+  "Secure payment powered by Razorpay.": "सुरक्षित भुगतान, Razorpay के माध्यम से।"
 };

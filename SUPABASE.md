@@ -117,6 +117,29 @@ should become Premium within seconds. Profile shows the renewal date and a
 
 Until step 5, everyone else still sees "Coming soon".
 
+**h. Get an email when someone joins or cancels (recommended).** Add three
+more secrets in Supabase → Edge Functions → Secrets:
+
+| Name            | Value                                                                 |
+|-----------------|-----------------------------------------------------------------------|
+| `NOTIFY_EMAIL`  | where alerts go, e.g. `gitareflection@gmail.com`                      |
+| `BREVO_API_KEY` | Brevo → SMTP & API → API Keys → Generate (starts with `xkeysib-`)     |
+| `NOTIFY_FROM`   | a sender address verified in Brevo → Senders (often the same email)   |
+
+Then redeploy both functions so they pick up the new code. You'll get an email
+when someone becomes Premium, cancels (with the date their Premium ends), has
+a renewal payment fail, or their Premium ends. Normal monthly renewals don't
+send an email. If any of these secrets is missing, payments still work and the
+alerts are simply skipped.
+
+**i. See every subscriber in one table.** Supabase → Table Editor →
+`subscription_overview` (or SQL Editor: `select * from subscription_overview;`).
+It lists each member's email, plan, status (`active`, `cancelling` = cancelled
+but still Premium until the date shown, `cancelled`, `halted` = payments failed,
+`pending` = a renewal is being retried) and the renew-or-end date. Only you can
+see it, never the website. Razorpay → Subscriptions shows the same from
+Razorpay's side, including each payment.
+
 ## Good to know
 - **Giving someone Premium** (until payments are connected): run in the SQL Editor
   `update public.profiles set plan = 'premium' where id = (select id from auth.users where email = 'person@example.com');`

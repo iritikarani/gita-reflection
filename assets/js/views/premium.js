@@ -2,7 +2,7 @@ import { esc, icon, openModal, toast } from "../ui.js";
 import { CONFIG, PRODUCTS } from "../config.js";
 import * as store from "../store.js";
 import { t, pick } from "../i18n.js";
-import { checkoutAvailable, startSubscription, paymentMessage } from "../payments.js";
+import { checkoutAvailable, isTestMode, rememberTestMode, startSubscription, paymentMessage } from "../payments.js";
 
 const PRODUCTS_HI = {
   "journal-7": {
@@ -150,6 +150,7 @@ async function checkout(root, button, period) {
 function premiumView(root) {
   const me = store.currentUser();
   const premium = me?.plan === "premium";
+  const testing = checkoutAvailable() && isTestMode();
 
   root.innerHTML = `
     <section class="premium">
@@ -234,6 +235,12 @@ function premiumView(root) {
               `
             ).join("")}
           </ul>
+
+          ${
+            testing && !premium
+              ? `<p class="notice-test" role="note">${t("Test mode: use Razorpay's test details. No real money is charged.")}</p>`
+              : ""
+          }
 
           ${
             premium
@@ -459,6 +466,7 @@ function shopView(root) {
 }
 
 export function render(root, { mode, query = {} }) {
+  rememberTestMode(query); // #/premium?paytest=1 turns on test checkout in this browser
   return mode === "shop"
     ? shopView(root)
     : premiumView(root);
