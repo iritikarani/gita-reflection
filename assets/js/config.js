@@ -27,7 +27,7 @@ export const CONFIG = {
   //   razorpay: "live" → checkout for everyone
   // Product links (e.g. Razorpay Payment Pages) — while empty, buttons show "Coming soon".
   payments: {
-    razorpay: "test",
+    razorpay: "live",
     premiumMonthly: "",
     premiumYearly: "",
     products: {

@@ -111,11 +111,11 @@ const CHECKOUT_STUB = `window.Razorpay = function (opts) {
   };
 };`;
 
-async function newPage() {
+async function newPage({ razorpay = "test" } = {}) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await context.route(/fonts\.(googleapis|gstatic)\.com|chiragmirani/, r => r.abort());
   await context.route(/checkout\.razorpay\.com/, r => r.fulfill({ contentType: "text/javascript", body: CHECKOUT_STUB }));
-  await enableSupabaseConfig(context, mock);
+  await enableSupabaseConfig(context, mock, { razorpay });
   await context.exposeFunction("__rzpSign", subId => {
     if (rzp.subs.has(subId)) rzp.subs.get(subId).paid = true; // the fake checkout "pays"
     return sign(SECRETS.RAZORPAY_KEY_SECRET, `pay_1|${subId}`);
@@ -294,6 +294,22 @@ await step("an unpaid checkout never blocks cancelling", async () => {
   }));
   rzp.refuseCancel = false;
   assert(res.status === 200 && p.subscription_status === "cancelled", "unpaid subscription blocked cancel");
+});
+
+await step("live mode: checkout for everyone, no test link or test note", async () => {
+  const { page: lp } = await newPage({ razorpay: "live" });
+  await signUp(lp, "Live", "live@example.com");
+  SECRETS.RAZORPAY_KEY_ID = "rzp_live_abc123"; // live keys: no test-email list applies
+  try {
+    await lp.goto(BASE + "#/premium");
+    await lp.waitForSelector('[data-buy="yearly"]');
+    assert(!(await lp.$(".notice-test")), "test note shown in live mode");
+    await lp.click('[data-buy="yearly"]');
+    await lp.waitForSelector(".modal-title:has-text('Welcome to Premium')", { timeout: 15000 });
+    const p = mock.profileFor("live@example.com");
+    assert(p.plan === "premium" && p.subscription_period === "yearly", "live yearly checkout failed");
+    assert((await lp.evaluate(() => window.__rzpOpened.key)) === "rzp_live_abc123", "live key not used");
+  } finally { SECRETS.RAZORPAY_KEY_ID = "rzp_test_abc123"; }
 });
 
 await step("Hindi: payment texts are translated", async () => {
