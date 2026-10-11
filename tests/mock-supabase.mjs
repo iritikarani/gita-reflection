@@ -252,12 +252,13 @@ export function createMockSupabase({ url = "https://testproject.supabase.co", an
 }
 
 // Serve config.js with Supabase switched on.
-export async function enableSupabaseConfig(context, mock) {
+export async function enableSupabaseConfig(context, mock, { razorpay } = {}) {
   await context.route(/\/assets\/js\/config\.js(\?.*)?$/, async r => {
     const res = await r.fetch();
     const src = (await res.text())
       .replace(/(supabase:\s*\{\s*url:\s*)"[^"]*"/, `$1"${mock.url}"`)
-      .replace(/anonKey:\s*"[^"]*"/, `anonKey: "${mock.anonKey}"`);
+      .replace(/anonKey:\s*"[^"]*"/, `anonKey: "${mock.anonKey}"`)
+      .replace(/^(\s*)razorpay:\s*"[^"]*"/m, (m, pad) => (razorpay === undefined ? m : `${pad}razorpay: "${razorpay}"`));
     await r.fulfill({ response: res, body: src, headers: { ...res.headers(), "content-type": "text/javascript" } });
   });
   await context.route(mock.pattern, r => mock.route(r));
