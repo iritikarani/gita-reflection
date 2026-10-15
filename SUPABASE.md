@@ -16,7 +16,7 @@ This creates the tables, the security rules (each person can only ever see their
 
 ## 3. Set up sign-in emails
 **Authentication → URL Configuration**
-- **Site URL**: your website's address, e.g. `https://gita-reflection.vercel.app/`.
+- **Site URL**: your website's address, e.g. `https://gitareflection.in/`.
 - **Redirect URLs**: add the same address. For local testing, also add `http://localhost:8080/`.
 
 **Authentication → Sign In / Providers → Email**
@@ -101,7 +101,7 @@ If a function later reports that it can't reach the database, also add
 Keys → `sb_secret_…`). Supabase normally provides this automatically.
 
 **f. Try it.** Sign in to the site with an email from `RAZORPAY_TEST_EMAILS`
-and open `https://gita-reflection.vercel.app/#/premium?paytest=1`. That turns
+and open `https://gitareflection.in/#/premium?paytest=1`. That turns
 on test checkout in that browser only; `?paytest=0` turns it off. Pay with
 Razorpay's test card or test UPI ID (shown in Razorpay's docs). The account
 should become Premium within seconds. Profile shows the renewal date and a

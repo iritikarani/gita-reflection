@@ -14,7 +14,7 @@ import { VERSES, VERSE_BY_ID, CATEGORIES } from "../assets/js/data/verses.js";
 import { SEO_TOPICS, SEO_TOPICS_HI } from "../assets/js/data/seo.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SITE_URL = (process.env.SITE_URL || "https://gita-reflection.vercel.app").replace(/\/$/, "");
+const SITE_URL = (process.env.SITE_URL || "https://gitareflection.in").replace(/\/$/, "");
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const br = s => esc(s).replace(/\n/g, "<br>");

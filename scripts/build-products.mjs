@@ -19,7 +19,7 @@ import { TEMPLATES } from "../assets/js/data/templates.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "products", "dist");
-const SITE = "gita-reflection.vercel.app";
+const SITE = "gitareflection.in";
 
 async function loadPlaywright() {
   try { return await import("playwright"); }

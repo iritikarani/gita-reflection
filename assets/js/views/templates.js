@@ -54,7 +54,7 @@ function templateView(root, tp) {
         <p class="tpl-verse"><span lang="sa">${esc(v.sa.split("\n")[0])}</span><br><em>“${esc(pick(v, "meaning"))}”</em> — ${t("Bhagavad Gita")} ${v.ch}.${v.v}</p>
       </header>
       ${tp.sections.map(([label, n]) => `<section class="tpl-section"><h3>${esc(L(label))}</h3>${lines(n)}</section>`).join("")}
-      <p class="tpl-foot">${t("A calm place to pause and reflect")} · gita-reflection.vercel.app</p>
+      <p class="tpl-foot">${t("A calm place to pause and reflect")} · gitareflection.in</p>
     </article>
   </section>`;
   root.querySelector("[data-print]").addEventListener("click", () => {
