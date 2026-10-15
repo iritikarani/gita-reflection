@@ -408,7 +408,7 @@ await step("Premium: programs, journal, collections, deeper prompts, templates",
 
 await step("share links always use the public site address", async () => {
   const link = await page.evaluate(async () => (await import("./assets/js/share.js")).verseLink("2.47"));
-  if (link !== "https://gita-reflection.vercel.app/#/shlok/2-47") throw new Error(link);
+  if (link !== "https://gitareflection.in/#/shlok/2-47") throw new Error(link);
 });
 
 await step("premium shows coming soon without payment links", async () => {
