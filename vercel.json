@@ -24,14 +24,14 @@
   ],
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/((?!assets/|manifest\\.webmanifest).*)",
       "has": [
         {
           "type": "host",
           "value": "gita-reflection.vercel.app"
         }
       ],
-      "destination": "https://gitareflection.in/:path*",
+      "destination": "https://gitareflection.in/$1",
       "permanent": true
     }
   ]
