@@ -1,4 +1,5 @@
 // Gita Reflection — app shell and router.
+import { CONFIG } from "./config.js";
 import * as store from "./store.js";
 import { esc, toast, closeAllModals } from "./ui.js";
 import { startAmbience, stopAmbience } from "./sound.js";
@@ -248,7 +249,18 @@ function updateGuidesLinks() {
   document.querySelectorAll('a[href="gita/"], a[href="gita/hi/"]').forEach(a => a.setAttribute("href", lang() === "hi" ? "gita/hi/" : "gita/"));
 }
 
+// The site lives at gitareflection.in. A page opened earlier on the old address
+// (an open tab or a cached copy) moves itself over, keeping the same #/page,
+// because Razorpay only accepts payments from the registered website.
+function moveToMainSite() {
+  const OLD_HOST = "gita-reflection.vercel.app";
+  if (location.hostname !== OLD_HOST || !CONFIG.siteUrl || CONFIG.siteUrl.includes(OLD_HOST)) return false;
+  location.replace(CONFIG.siteUrl.replace(/\/$/, "") + location.pathname + location.search + location.hash);
+  return true;
+}
+
 async function start() {
+  if (moveToMainSite()) return;
   langFromLink();
   updateGuidesLinks();
   const link = readEmailLink();
