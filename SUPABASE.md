@@ -140,6 +140,21 @@ but still Premium until the date shown, `cancelled`, `halted` = payments failed,
 see it, never the website. Razorpay → Subscriptions shows the same from
 Razorpay's side, including each payment.
 
+## Keeping the project awake
+
+Supabase's free plan pauses a project after about a week with no activity. While
+it's paused, sign-in, saving and payments stop working. To prevent that, Vercel
+calls `api/keep-alive.js` once a day (the `crons` entry in `vercel.json`). It
+makes one tiny database call through the `keep_alive()` function in
+`schema.sql`. It reads no data and uses only the public key.
+
+- To check it: Vercel → your project → **Settings → Cron Jobs**. You'll see
+  `/api/keep-alive`, its last run, and a **Run** button.
+- If the project ever does pause: Supabase dashboard → the project →
+  **Restore project**. Then look in Razorpay → Webhooks for failed deliveries
+  during the pause, and re-send them.
+- The only guaranteed "never pauses" option is Supabase's paid Pro plan.
+
 ## Good to know
 - **Giving someone Premium** (until payments are connected): run in the SQL Editor
   `update public.profiles set plan = 'premium' where id = (select id from auth.users where email = 'person@example.com');`

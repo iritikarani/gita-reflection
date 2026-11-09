@@ -24,7 +24,7 @@
   ],
   "redirects": [
     {
-      "source": "/((?!assets/|manifest\\.webmanifest).*)",
+      "source": "/((?!assets/|api/|manifest\\.webmanifest).*)",
       "has": [
         {
           "type": "host",
@@ -33,6 +33,12 @@
       ],
       "destination": "https://gitareflection.in/$1",
       "permanent": true
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/keep-alive",
+      "schedule": "17 6 * * *"
     }
   ]
 }
