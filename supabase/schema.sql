@@ -245,5 +245,17 @@ create or replace view public.subscription_overview as
   order by p.plan desc, p.renews_at nulls last;
 revoke all on public.subscription_overview from public, anon, authenticated;
 
+-- ---------- Keep-alive (used by api/keep-alive.js, run daily by Vercel) ----------
+-- Supabase's free plan pauses projects after about a week without activity.
+-- This harmless function lets a daily ping reach the database. It reads no data.
+create or replace function public.keep_alive()
+returns timestamptz
+language sql
+stable
+set search_path = ''
+as $$ select now() $$;
+revoke execute on function public.keep_alive() from public;
+grant execute on function public.keep_alive() to anon, authenticated;
+
 -- Plans normally change through Razorpay (see SUPABASE.md). To give someone Premium by hand:
 --   update public.profiles set plan = 'premium' where id = (select id from auth.users where email = 'person@example.com');
